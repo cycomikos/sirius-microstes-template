@@ -1,0 +1,192 @@
+.maps-scenes-container {
+  width: 100%;
+  max-width: 490px;
+  height: 100vh;
+  background: #f8f9fa;
+  border-right: 1px solid #e0e6ed;
+  display: flex;
+  flex-direction: column;
+}
+
+.sirius-header {
+  background: #00b4a6;
+  padding: 20px;
+  color: white;
+}
+
+.sirius-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 48px;
+  height: 48px;
+  background: white;
+  color: #00b4a6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.header-text h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: white;
+}
+
+.header-text p {
+  margin: 2px 0 0 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.maps-scenes-content {
+  flex: 1;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #00b4a6;
+}
+
+.section-icon {
+  color: #6b7280;
+  --calcite-icon-size: 24px;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.maps-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.map-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.map-item:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.map-thumbnail {
+  width: 64px;
+  height: 48px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+}
+
+.thumbnail-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+  border-radius: 6px;
+}
+
+.map-emoji {
+  font-size: 20px;
+}
+
+.icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+
+.icon-container calcite-icon {
+  --calcite-icon-size: 24px;
+}
+
+.map-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.map-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.help-section {
+  margin-top: auto;
+  padding-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.help-icon {
+  width: 40px;
+  height: 40px;
+  background: #f3f4f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  --calcite-icon-size: 20px;
+}
+
+.help-icon:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+@media (max-width: 768px) {
+  .maps-scenes-container {
+    max-width: 100%;
+  }
+  
+  .sirius-header {
+    padding: 16px;
+  }
+  
+  .maps-scenes-content {
+    padding: 20px 16px;
+  }
+  
+  .map-item {
+    padding: 12px;
+  }
+}

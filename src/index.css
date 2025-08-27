@@ -1,0 +1,24 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Import Calcite global styles */
+@import "~@esri/calcite-components/dist/calcite/calcite.css";
+
+/* Global Calcite theme customization */
+:root {
+  --calcite-color-brand: #00a19c;
+  --calcite-color-brand-hover: #005f5f;
+  --calcite-color-brand-press: #004d4a;
+}
