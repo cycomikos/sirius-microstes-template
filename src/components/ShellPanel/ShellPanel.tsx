@@ -1,4 +1,5 @@
 import React from 'react';
+import { APP_CONFIG } from '../../constants';
 import './ShellPanel.css';
 
 interface PanelItem {
@@ -136,6 +137,39 @@ const ShellPanel: React.FC<ShellPanelProps> = ({ activePanel, isVisible }) => {
           title: '📊 Quality Check',
           description: 'Validation and QA tools',
           icon: '📊'
+        }
+      ]
+    },
+    version: {
+      title: 'Version Information',
+      stats: [
+        { value: APP_CONFIG.VERSION, label: 'Version' },
+        { value: 'React', label: 'Framework' }
+      ],
+      items: [
+        {
+          id: '1',
+          title: '📋 Application Details',
+          description: `${APP_CONFIG.APP_NAME} - ${APP_CONFIG.APP_DESCRIPTION}`,
+          icon: '📋'
+        },
+        {
+          id: '2',
+          title: '🔧 Build Information',
+          description: 'Built with React 18.2.0 & TypeScript',
+          icon: '🔧'
+        },
+        {
+          id: '3',
+          title: '📅 Release Date',
+          description: 'Latest stable release',
+          icon: '📅'
+        },
+        {
+          id: '4',
+          title: '📖 Documentation',
+          description: 'User guide and API documentation',
+          icon: '📖'
         }
       ]
     }

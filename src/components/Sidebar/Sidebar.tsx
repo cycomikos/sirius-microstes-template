@@ -34,6 +34,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     onPanelChange(panelId);
   };
 
+  const handleVersionClick = () => {
+    onPanelChange('version');
+  };
+
   return (
     <aside className={`sidebar ${isExpanded ? 'expanded' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}>
       <nav className="sidebar-nav">
@@ -51,7 +55,11 @@ const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </nav>
       
-      <div className="nav-item version-info" data-tooltip={`Version ${APP_CONFIG.VERSION}`}>
+      <div 
+        className={`nav-item version-info ${activePanel === 'version' ? 'active' : ''}`} 
+        data-tooltip={`Version ${APP_CONFIG.VERSION}`}
+        onClick={handleVersionClick}
+      >
         <span className="nav-icon">❓</span>
         <span className="nav-text">Version {APP_CONFIG.VERSION}</span>
       </div>
