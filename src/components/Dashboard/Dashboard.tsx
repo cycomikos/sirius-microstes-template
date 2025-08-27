@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CountryCode, Microsite } from '../../types/microsite';
 import { COUNTRIES } from '../../data/microsites';
 import { useMicrosites } from '../../hooks/useMicrosites';
@@ -6,8 +6,9 @@ import MicrositeCard from '../MicrositeCard/MicrositeCard';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
-  const [currentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const itemsPerPage = 8;
   
   const {
     selectedCountry,
@@ -36,6 +37,23 @@ const Dashboard: React.FC = () => {
     setTimeout(() => setError(null), 3000);
   };
 
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredMicrosites.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedMicrosites = filteredMicrosites.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of the grid
+    document.querySelector('.microsites-grid')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Reset to page 1 when country changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCountry]);
+
   return (
     <main className="content-area">
       <div className="country-selector">
@@ -60,7 +78,7 @@ const Dashboard: React.FC = () => {
       )}
 
       <div className="microsites-grid">
-        {filteredMicrosites.map(microsite => (
+        {paginatedMicrosites.filter(Boolean).map(microsite => (
           <MicrositeCard
             key={microsite.id}
             microsite={microsite}
@@ -70,14 +88,19 @@ const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      <div className="pagination">
-        <button className={`page-btn ${currentPage === 1 ? 'active' : ''}`}>
-          1
-        </button>
-        <button className={`page-btn ${currentPage === 2 ? 'active' : ''}`}>
-          2
-        </button>
-      </div>
+      {totalPages > 1 && (
+        <div className="pagination">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            <button 
+              key={page}
+              className={`page-btn ${currentPage === page ? 'active' : ''}`}
+              onClick={() => handlePageChange(page)}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+      )}
     </main>
   );
 };

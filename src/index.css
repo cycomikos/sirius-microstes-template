@@ -16,9 +16,71 @@ code {
 /* Import Calcite global styles */
 @import "~@esri/calcite-components/dist/calcite/calcite.css";
 
+/* Petronas Theme Colors */
+:root {
+  /* Primary Petronas Colors */
+  --petronas-teal-primary: #00a19c;
+  --petronas-teal-dark: #005f5f;
+  --petronas-teal-darker: #004d4a;
+  --petronas-aqua: #00ffff;
+  --petronas-jungle-green: #19362f;
+  --petronas-columbia-blue: #ced7df;
+  --petronas-white: #ffffff;
+  
+  /* Light Theme Colors */
+  --petronas-bg-primary: #ffffff;
+  --petronas-bg-secondary: #f8f9fa;
+  --petronas-bg-tertiary: #e9ecef;
+  --petronas-text-primary: #212529;
+  --petronas-text-secondary: #6c757d;
+  --petronas-text-muted: #adb5bd;
+  --petronas-border-light: #dee2e6;
+  --petronas-border-medium: #ced4da;
+  
+  /* Shadow and Effects */
+  --petronas-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --petronas-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --petronas-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Status Colors */
+  --petronas-success: #28a745;
+  --petronas-warning: #ffc107;
+  --petronas-error: #dc3545;
+  --petronas-info: var(--petronas-teal-primary);
+}
+
+/* Dark Theme Colors */
+body.dark-theme {
+  --petronas-bg-primary: #1a1a1a;
+  --petronas-bg-secondary: #2d2d2d;
+  --petronas-bg-tertiary: #3d3d3d;
+  --petronas-text-primary: #e0e0e0;
+  --petronas-text-secondary: #b0b0b0;
+  --petronas-text-muted: #808080;
+  --petronas-border-light: #444;
+  --petronas-border-medium: #555;
+  
+  /* Darker shadow effects */
+  --petronas-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --petronas-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --petronas-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+  
+  /* Adjust teal colors for dark theme */
+  --petronas-teal-primary: #00c2bd;
+  --petronas-aqua: #66ffff;
+}
+
 /* Global Calcite theme customization */
 :root {
-  --calcite-color-brand: #00a19c;
-  --calcite-color-brand-hover: #005f5f;
-  --calcite-color-brand-press: #004d4a;
+  --calcite-color-brand: var(--petronas-teal-primary);
+  --calcite-color-brand-hover: var(--petronas-teal-dark);
+  --calcite-color-brand-press: var(--petronas-teal-darker);
+  --calcite-color-background: var(--petronas-bg-primary);
+  --calcite-color-foreground-1: var(--petronas-bg-secondary);
+  --calcite-color-foreground-2: var(--petronas-bg-tertiary);
+  --calcite-color-text-1: var(--petronas-text-primary);
+  --calcite-color-text-2: var(--petronas-text-secondary);
+  --calcite-color-text-3: var(--petronas-text-muted);
+  --calcite-color-border-1: var(--petronas-border-light);
+  --calcite-color-border-2: var(--petronas-border-medium);
 }
