@@ -196,6 +196,7 @@
   line-height: 1.2;
   max-width: 100%;
   word-break: break-word;
+  -webkit-hyphens: auto;
   hyphens: auto;
 }
 
