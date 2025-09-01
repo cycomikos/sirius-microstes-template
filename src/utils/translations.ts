@@ -36,6 +36,10 @@ export const translations = {
     accessDenied: 'Access denied',
     accessRequestSubmitted: 'Access request submitted for:',
     
+    // Breadcrumb
+    home: 'Home',
+    dashboard: 'Dashboard',
+    
     // Microsite Card
     systemOffline: 'SYSTEM OFFLINE',
     getStarted: 'GET STARTED',
@@ -136,6 +140,10 @@ export const translations = {
     selectCountry: 'Pilih Negara',
     accessDenied: 'Akses ditolak',
     accessRequestSubmitted: 'Permohonan akses dihantar untuk:',
+    
+    // Breadcrumb
+    home: 'Laman Utama',
+    dashboard: 'Papan Pemuka',
     
     // Microsite Card
     systemOffline: 'SISTEM LUAR TALIAN',

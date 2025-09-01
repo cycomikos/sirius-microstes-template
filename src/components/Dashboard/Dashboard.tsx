@@ -6,6 +6,7 @@ import { Language } from '../../utils/translations';
 import { useTranslation, createPageRange, scrollToElement, calculateLayoutStyles, createErrorHandler } from '../../utils/componentHelpers';
 import MicrositeCard from '../MicrositeCard/MicrositeCard';
 import ErrorMessage from '../ErrorMessage/ErrorMessage';
+import Breadcrumb from '../Breadcrumb/Breadcrumb';
 import './Dashboard.css';
 
 interface DashboardProps {
@@ -71,10 +72,35 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded,
     calculateLayoutStyles(sidebarExpanded, panelWidth),
     [sidebarExpanded, panelWidth]
   );
+
+  const breadcrumbItems = useMemo(() => [
+    { 
+      label: t('home'), 
+      href: '/',
+      ariaLabel: `${t('home')} - Navigate to home page`
+    },
+    { 
+      label: t('dashboard'), 
+      isActive: true,
+      ariaLabel: `${t('dashboard')} - Current page`
+    }
+  ], [t]);
+
+  const handleBreadcrumbNavigate = useCallback((href: string) => {
+    console.log('Navigating to:', href);
+    // Handle navigation logic here if needed
+    // For example: window.location.href = href; or use React Router
+  }, []);
   
   return (
     <main className="content-area" style={layoutStyles}>
       <div className="content-wrapper">
+        <Breadcrumb 
+          items={breadcrumbItems} 
+          currentLanguage={currentLanguage}
+          onNavigate={handleBreadcrumbNavigate}
+        />
+        
         <div className="country-selector">
           <label htmlFor="country-select">{t('selectCountry')}</label>
           <select
