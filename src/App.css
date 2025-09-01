@@ -27,7 +27,7 @@ body {
 }
 
 .main-layout {
-  display: flex;
+  position: relative;
   flex: 1;
   overflow: hidden;
 }

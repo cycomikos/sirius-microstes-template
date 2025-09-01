@@ -9,11 +9,18 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
+  overflow: visible;
 }
 
 .shell-panel-wrapper.visible {
   opacity: 1;
   visibility: visible;
+}
+
+.shell-panel-wrapper.visible .resize-handle {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .shell-panel {
@@ -112,11 +119,12 @@
   top: 0;
   width: 8px;
   height: 100%;
-  background: rgba(0, 150, 136, 0.3);
+  background: rgba(0, 150, 136, 0.5);
   cursor: col-resize;
-  z-index: 10;
+  z-index: 1000;
   transition: background-color 0.2s ease;
   border-radius: 0 4px 4px 0;
+  pointer-events: auto;
 }
 
 .resize-handle:hover {
@@ -138,6 +146,10 @@
 .shell-panel-wrapper.resizing * {
   pointer-events: none;
   user-select: none;
+}
+
+.shell-panel-wrapper.resizing .resize-handle {
+  pointer-events: auto;
 }
 
 /* Responsive adjustments */

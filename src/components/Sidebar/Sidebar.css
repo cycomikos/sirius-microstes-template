@@ -1,17 +1,21 @@
 .sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 60px;
+  height: 100%;
   background: var(--petronas-bg-primary);
   border-right: 1px solid var(--petronas-border-light);
   display: flex;
   flex-direction: column;
   transition: width 0.3s, transform 0.3s, background-color 0.3s ease, border-color 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  height: 100%;
+  overflow: visible;
+  z-index: 100;
 }
 
 .sidebar.expanded {
-  width: 320px;
+  width: auto;
+  min-width: 60px;
 }
 
 .sidebar-nav {
@@ -93,20 +97,6 @@
   margin-top: auto;
 }
 
-.resize-handle {
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--petronas-border-light);
-  cursor: col-resize;
-  transition: background 0.2s;
-}
-
-.resize-handle:hover {
-  background: var(--petronas-teal-primary);
-}
 
 /* Dark theme styles are handled by CSS variables */
 
@@ -143,10 +133,6 @@
   
   /* Hide tooltips on mobile */
   .nav-item::after {
-    display: none;
-  }
-  
-  .resize-handle {
     display: none;
   }
 }

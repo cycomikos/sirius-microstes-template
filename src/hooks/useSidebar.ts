@@ -49,11 +49,14 @@ export const useSidebar = () => {
   // Handle panel resize functionality
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsResizing(true);
   }, []);
 
   const handleResizeMove = useCallback((e: MouseEvent) => {
     if (!isResizing) return;
+    
+    e.preventDefault();
     
     const sidebarElement = document.querySelector('.sidebar');
     
@@ -67,14 +70,14 @@ export const useSidebar = () => {
     const minWidth = 200;
     const maxWidth = 600;
     
-    if (newWidth >= minWidth && newWidth <= maxWidth) {
-      setPanelWidth(newWidth);
-    }
+    const clampedWidth = Math.min(Math.max(newWidth, minWidth), maxWidth);
+    setPanelWidth(clampedWidth);
   }, [isResizing]);
 
   const handleResizeEnd = useCallback(() => {
     if (isResizing) {
       setIsResizing(false);
+      // Save the current panel width to localStorage
       localStorage.setItem('sirius-panel-width', panelWidth.toString());
     }
   }, [isResizing, panelWidth]);

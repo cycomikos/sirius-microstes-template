@@ -8,9 +8,11 @@ import './Dashboard.css';
 
 interface DashboardProps {
   currentLanguage: Language;
+  sidebarExpanded: boolean;
+  panelWidth: number;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ currentLanguage }) => {
+const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded, panelWidth }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 8;
@@ -62,8 +64,17 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage }) => {
     setCurrentPage(1);
   }, [selectedCountry]);
 
+  // Calculate the content margin based on sidebar state
+  const contentMargin = sidebarExpanded ? `${60 + panelWidth}px` : '60px';
+  
   return (
-    <main className="content-area">
+    <main 
+      className="content-area"
+      style={{
+        marginLeft: contentMargin,
+        transition: 'margin-left 0.3s ease'
+      }}
+    >
       <div className="country-selector">
         <label htmlFor="country-select">{t('selectCountry')}</label>
         <select 

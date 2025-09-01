@@ -73,7 +73,11 @@ function App() {
         {/* Content Area with Routing */}
         <ErrorBoundary>
           <Routes>
-            <Route path="/" element={<Dashboard currentLanguage={currentLanguage} />} />
+            <Route path="/" element={<Dashboard 
+              currentLanguage={currentLanguage} 
+              sidebarExpanded={sidebarExpanded}
+              panelWidth={panelWidth}
+            />} />
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
             
             {/* Error Pages */}
