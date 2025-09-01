@@ -1,6 +1,7 @@
 import React from 'react';
 import { Microsite } from '../../types/microsite';
-import { getTranslation, Language, translations } from '../../utils/translations';
+import { Language } from '../../utils/translations';
+import { useTranslation } from '../../utils/componentHelpers';
 
 interface MicrositeCardProps {
   microsite: Microsite;
@@ -15,8 +16,7 @@ const MicrositeCard: React.FC<MicrositeCardProps> = ({
   onRequestAccess,
   currentLanguage
 }) => {
-  // Helper function to get translated text
-  const t = (key: keyof typeof translations.en) => getTranslation(key, currentLanguage);
+  const t = useTranslation(currentLanguage);
   const renderActionButton = () => {
     if (microsite.status === 'offline') {
       return (
@@ -67,7 +67,7 @@ const MicrositeCard: React.FC<MicrositeCardProps> = ({
           </span>
         </div>
         
-        <p className="card-description">{microsite.description[currentLanguage]}</p>
+        <p className="card-description">{microsite.description[currentLanguage as keyof typeof microsite.description]}</p>
         
         <div className="card-actions">
           {renderActionButton()}

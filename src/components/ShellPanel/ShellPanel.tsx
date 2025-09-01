@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { APP_CONFIG } from '../../constants';
-import { getTranslation, Language, translations } from '../../utils/translations';
+import { Language } from '../../utils/translations';
+import { useTranslation, TranslationKey } from '../../utils/componentHelpers';
 import './ShellPanel.css';
 
 interface PanelItem {
@@ -39,9 +40,23 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
   isResizing, 
   onResizeStart 
 }) => {
-  // Helper function to get translated text
-  const t = (key: keyof typeof translations.en) => getTranslation(key, currentLanguage);
-  const panelData: Record<string, PanelData> = {
+  const t = useTranslation(currentLanguage);
+  const createPanelItem = useCallback((id: string, icon: string, titleKey: TranslationKey, descriptionKey: TranslationKey) => ({
+    id,
+    title: `${icon} ${t(titleKey)}`,
+    description: t(descriptionKey),
+    icon
+  }), [t]);
+
+  const handleItemClick = useCallback((item: PanelItem) => {
+    if (item.onClick) {
+      item.onClick();
+    } else {
+      console.log('Clicked:', item.title);
+    }
+  }, []);
+
+  const panelData: Record<string, PanelData> = useMemo(() => ({
     applications: {
       title: t('applications'),
       stats: [
@@ -49,82 +64,27 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
         { value: '5', label: t('accessible') }
       ],
       items: [
-        {
-          id: '1',
-          title: `🔥 ${t('recentlyAccessed')}`,
-          description: t('viewRecentApps'),
-          icon: '🔥'
-        },
-        {
-          id: '2',
-          title: `⭐ ${t('favorites')}`,
-          description: t('quickAccessStarred'),
-          icon: '⭐'
-        },
-        {
-          id: '3',
-          title: `📊 ${t('analyticsDashboard')}`,
-          description: t('usageStatistics'),
-          icon: '📊'
-        }
+        createPanelItem('1', '🔥', 'recentlyAccessed', 'viewRecentApps'),
+        createPanelItem('2', '⭐', 'favorites', 'quickAccessStarred'),
+        createPanelItem('3', '📊', 'analyticsDashboard', 'usageStatistics')
       ]
     },
     maps: {
       title: t('mapsScenes'),
       items: [
-        {
-          id: '1',
-          title: `🗺️ ${t('malaysiaBaseMap')}`,
-          description: t('updatedDaysAgo'),
-          icon: '🗺️'
-        },
-        {
-          id: '2',
-          title: `🌍 ${t('globalOperations')}`,
-          description: t('updatedWeekAgo'),
-          icon: '🌍'
-        },
-        {
-          id: '3',
-          title: `🛢️ ${t('oilFieldsMap')}`,
-          description: t('updated3DaysAgo'),
-          icon: '🛢️'
-        },
-        {
-          id: '4',
-          title: `📍 ${t('pipelineNetwork')}`,
-          description: t('updated5DaysAgo'),
-          icon: '📍'
-        }
+        createPanelItem('1', '🗺️', 'malaysiaBaseMap', 'updatedDaysAgo'),
+        createPanelItem('2', '🌍', 'globalOperations', 'updatedWeekAgo'),
+        createPanelItem('3', '🛢️', 'oilFieldsMap', 'updated3DaysAgo'),
+        createPanelItem('4', '📍', 'pipelineNetwork', 'updated5DaysAgo')
       ]
     },
     layers: {
       title: t('dataLayers'),
       items: [
-        {
-          id: '1',
-          title: `🔷 ${t('explorationBlocks')}`,
-          description: t('polygonFeatures'),
-          icon: '🔷'
-        },
-        {
-          id: '2',
-          title: `📍 ${t('wellLocations')}`,
-          description: t('pointFeatures'),
-          icon: '📍'
-        },
-        {
-          id: '3',
-          title: `🛤️ ${t('pipelines')}`,
-          description: t('lineFeatures'),
-          icon: '🛤️'
-        },
-        {
-          id: '4',
-          title: `🏭 ${t('facilities')}`,
-          description: t('pointFeatures2'),
-          icon: '🏭'
-        }
+        createPanelItem('1', '🔷', 'explorationBlocks', 'polygonFeatures'),
+        createPanelItem('2', '📍', 'wellLocations', 'pointFeatures'),
+        createPanelItem('3', '🛤️', 'pipelines', 'lineFeatures'),
+        createPanelItem('4', '🏭', 'facilities', 'pointFeatures2')
       ]
     },
     data: {
@@ -134,24 +94,9 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
         { value: '847', label: t('datasets') }
       ],
       items: [
-        {
-          id: '1',
-          title: `📤 ${t('uploadData')}`,
-          description: t('importDatasets'),
-          icon: '📤'
-        },
-        {
-          id: '2',
-          title: `🔄 ${t('dataProcessing')}`,
-          description: t('etlWorkflows'),
-          icon: '🔄'
-        },
-        {
-          id: '3',
-          title: `📊 ${t('qualityCheck')}`,
-          description: t('validationTools'),
-          icon: '📊'
-        }
+        createPanelItem('1', '📤', 'uploadData', 'importDatasets'),
+        createPanelItem('2', '🔄', 'dataProcessing', 'etlWorkflows'),
+        createPanelItem('3', '📊', 'qualityCheck', 'validationTools')
       ]
     },
     version: {
@@ -167,39 +112,16 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
           description: `${t('appName')} - ${t('appDescription')}`,
           icon: '📋'
         },
-        {
-          id: '2',
-          title: `🔧 ${t('buildInformation')}`,
-          description: t('builtWithReact'),
-          icon: '🔧'
-        },
-        {
-          id: '3',
-          title: `📅 ${t('releaseDate')}`,
-          description: t('latestRelease'),
-          icon: '📅'
-        },
-        {
-          id: '4',
-          title: `📖 ${t('documentation')}`,
-          description: t('userGuideApi'),
-          icon: '📖'
-        }
+        createPanelItem('2', '🔧', 'buildInformation', 'builtWithReact'),
+        createPanelItem('3', '📅', 'releaseDate', 'latestRelease'),
+        createPanelItem('4', '📖', 'documentation', 'userGuideApi')
       ]
     }
-  };
+  }), [t, createPanelItem]);
 
   const currentPanel: PanelData | undefined = panelData[activePanel];
 
   if (!currentPanel) return null;
-
-  const handleItemClick = (item: PanelItem) => {
-    if (item.onClick) {
-      item.onClick();
-    } else {
-      console.log('Clicked:', item.title);
-    }
-  };
 
   return (
     <div 

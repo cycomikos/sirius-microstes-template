@@ -7,6 +7,25 @@
   box-sizing: border-box;
 }
 
+.content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 0.5rem;
+}
+
+/* Enhanced responsive spacing */
+@media (min-width: 1200px) {
+  .content-wrapper {
+    padding: 0 1rem;
+  }
+}
+
+@media (min-width: 1600px) {
+  .content-wrapper {
+    padding: 0 1.5rem;
+  }
+}
+
 .country-selector {
   background: var(--petronas-bg-primary);
   border-radius: 8px;
@@ -44,6 +63,7 @@
   transition: all 0.3s ease;
   width: 100%;
   box-sizing: border-box;
+  padding: 0 0.25rem;
 }
 
 /* Dynamic grid adjustments based on available content width */
@@ -322,9 +342,14 @@
     margin-left: 0 !important;
   }
   
+  .content-wrapper {
+    padding: 0 0.25rem;
+  }
+  
   .microsites-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
+    padding: 0;
   }
   
   .card-image {

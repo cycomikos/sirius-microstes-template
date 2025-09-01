@@ -1,7 +1,8 @@
 import React from 'react';
 import ShellPanel from '../ShellPanel/ShellPanel';
 import { APP_CONFIG } from '../../constants';
-import { getTranslation, Language, translations } from '../../utils/translations';
+import { Language } from '../../utils/translations';
+import { useTranslation } from '../../utils/componentHelpers';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -32,8 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   isResizing,
   onResizeStart
 }) => {
-  // Helper function to get translated text
-  const t = (key: keyof typeof translations.en) => getTranslation(key, currentLanguage);
+  const t = useTranslation(currentLanguage);
   
   const navItems: NavItem[] = [
     { id: 'applications', icon: '📱', label: t('applications'), tooltip: t('applications') },
