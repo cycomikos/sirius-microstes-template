@@ -38,6 +38,12 @@ export const useSidebar = () => {
     if (!sidebarExpanded && window.innerWidth > BREAKPOINTS.MOBILE) {
       setSidebarExpanded(true);
     }
+    
+    // Auto-resize panel for data and version panels if current width is too small
+    if ((panel === 'data' || panel === 'version') && panelWidth < 500) {
+      setPanelWidth(500);
+      localStorage.setItem('sirius-panel-width', '500');
+    }
   };
 
   // Handle panel resize functionality
@@ -50,15 +56,14 @@ export const useSidebar = () => {
     if (!isResizing) return;
     
     const sidebarElement = document.querySelector('.sidebar');
-    const shellPanelElement = document.querySelector('.shell-panel-wrapper');
     
-    if (!sidebarElement || !shellPanelElement) return;
+    if (!sidebarElement) return;
     
     const sidebarRect = sidebarElement.getBoundingClientRect();
-    const shellPanelRect = shellPanelElement.getBoundingClientRect();
     
-    // Calculate new width based on mouse position relative to shell panel's left edge
-    const newWidth = e.clientX - shellPanelRect.left;
+    // Calculate new width based on mouse position relative to sidebar's left edge
+    // Subtract 60px for the sidebar navigation width
+    const newWidth = e.clientX - sidebarRect.left - 60;
     const minWidth = 200;
     const maxWidth = 600;
     
