@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { CalciteIcon } from '@esri/calcite-components-react';
+import { Language } from '../../utils/translations';
+import { useTranslation, calculateLayoutStyles } from '../../utils/componentHelpers';
+import Breadcrumb from '../Breadcrumb/Breadcrumb';
 import './MapsAndScenes.css';
 
 interface MapItem {
@@ -11,60 +14,86 @@ interface MapItem {
   thumbnail?: boolean;
 }
 
-const MapsAndScenes: React.FC = () => {
+interface MapsAndScenesProps {
+  currentLanguage?: Language;
+  sidebarExpanded?: boolean;
+  panelWidth?: number;
+}
+
+const MapsAndScenes: React.FC<MapsAndScenesProps> = ({ currentLanguage = 'en', sidebarExpanded = false, panelWidth = 280 }) => {
+  const t = useTranslation(currentLanguage);
+
+  const layoutStyles = useMemo(() => 
+    calculateLayoutStyles(sidebarExpanded, panelWidth),
+    [sidebarExpanded, panelWidth]
+  );
+
+  const breadcrumbItems = useMemo(() => [
+    { 
+      label: t('home'), 
+      href: '/',
+      ariaLabel: `${t('home')} - Navigate to home page`
+    },
+    { 
+      label: t('mapsScenes'), 
+      isActive: true,
+      ariaLabel: `${t('mapsScenes')} - Current page`
+    }
+  ], [t]);
+
+  const handleBreadcrumbNavigate = useCallback((href: string) => {
+    console.log('Navigating to:', href);
+  }, []);
+
   const mapItems: MapItem[] = [
     {
       id: '1',
-      title: 'Malaysia Base Map',
+      title: t('malaysiaBaseMap'),
       icon: '🗺️',
       iconType: 'emoji',
-      updated: '2 days ago',
+      updated: t('updatedDaysAgo'),
       thumbnail: true
     },
     {
       id: '2',
-      title: 'Global Operations',
+      title: t('globalOperations'),
       icon: 'globe',
       iconType: 'calcite',
-      updated: '1 week ago'
+      updated: t('updatedWeekAgo')
     },
     {
       id: '3',
-      title: 'Oil Fields Map',
+      title: t('oilFieldsMap'),
       icon: 'folder',
       iconType: 'calcite',
-      updated: '3 days ago'
+      updated: t('updated3DaysAgo')
     },
     {
       id: '4',
-      title: 'Pipeline Network',
+      title: t('pipelineNetwork'),
       icon: 'pin',
       iconType: 'calcite',
-      updated: '5 days ago'
+      updated: t('updated5DaysAgo')
     }
   ];
 
   return (
-    <div className="maps-scenes-container">
-      <div className="sirius-header">
-        <div className="sirius-logo">
-          <span className="logo-icon">S</span>
-          <div className="header-text">
-            <h1>SIRIUS Portal</h1>
-            <p>Enterprise GIS Platform</p>
-          </div>
-        </div>
-      </div>
+    <main className="content-area" style={layoutStyles}>
+      <div className="content-wrapper">
+        <Breadcrumb 
+          items={breadcrumbItems} 
+          currentLanguage={currentLanguage}
+          onNavigate={handleBreadcrumbNavigate}
+        />
 
-      <div className="maps-scenes-content">
         <div className="section-header">
           <CalciteIcon icon="layer" className="section-icon" />
-          <h2>Maps &amp; Scenes</h2>
+          <h2>{t('mapsScenes')}</h2>
         </div>
 
-        <div className="maps-list">
+        <div className="microsites-grid">
           {mapItems.map((item) => (
-            <div key={item.id} className="map-item">
+            <div key={item.id} className="map-card">
               <div className="map-thumbnail">
                 {item.thumbnail ? (
                   <div className="thumbnail-image">
@@ -82,17 +111,13 @@ const MapsAndScenes: React.FC = () => {
               </div>
               <div className="map-info">
                 <h3>{item.title}</h3>
-                <p>Updated: {item.updated}</p>
+                <p>{item.updated}</p>
               </div>
             </div>
           ))}
         </div>
-
-        <div className="help-section">
-          <CalciteIcon icon="question" className="help-icon" />
-        </div>
       </div>
-    </div>
+    </main>
   );
 };
 

@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../../constants';
 import { Language } from '../../utils/translations';
 import { useTranslation, TranslationKey } from '../../utils/componentHelpers';
@@ -30,6 +31,7 @@ interface ShellPanelProps {
   panelWidth: number;
   isResizing: boolean;
   onResizeStart: (e: React.MouseEvent) => void;
+  onViewChange?: (view: string) => void;
 }
 
 const ShellPanel: React.FC<ShellPanelProps> = ({ 
@@ -38,15 +40,34 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
   currentLanguage, 
   panelWidth, 
   isResizing, 
-  onResizeStart 
+  onResizeStart,
+  onViewChange 
 }) => {
   const t = useTranslation(currentLanguage);
-  const createPanelItem = useCallback((id: string, icon: string, titleKey: TranslationKey, descriptionKey: TranslationKey) => ({
+  const navigate = useNavigate();
+  const createPanelItem = useCallback((id: string, icon: string, titleKey: TranslationKey, descriptionKey: TranslationKey, onClick?: () => void) => ({
     id,
     title: `${icon} ${t(titleKey)}`,
     description: t(descriptionKey),
-    icon
+    icon,
+    onClick
   }), [t]);
+
+  const navigateToMaps = useCallback(() => {
+    navigate('/maps');
+  }, [navigate]);
+
+  const navigateToMapsAndScenes = useCallback(() => {
+    if (onViewChange) {
+      onViewChange('maps-and-scenes');
+    }
+  }, [onViewChange]);
+
+  const navigateToDashboard = useCallback(() => {
+    if (onViewChange) {
+      onViewChange('dashboard');
+    }
+  }, [onViewChange]);
 
   const handleItemClick = useCallback((item: PanelItem) => {
     if (item.onClick) {
@@ -72,10 +93,10 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
     maps: {
       title: t('mapsScenes'),
       items: [
-        createPanelItem('1', '🗺️', 'malaysiaBaseMap', 'updatedDaysAgo'),
-        createPanelItem('2', '🌍', 'globalOperations', 'updatedWeekAgo'),
-        createPanelItem('3', '🛢️', 'oilFieldsMap', 'updated3DaysAgo'),
-        createPanelItem('4', '📍', 'pipelineNetwork', 'updated5DaysAgo')
+        createPanelItem('1', '🗺️', 'malaysiaBaseMap', 'updatedDaysAgo', navigateToMapsAndScenes),
+        createPanelItem('2', '🌍', 'globalOperations', 'updatedWeekAgo', navigateToMaps),
+        createPanelItem('3', '🛢️', 'oilFieldsMap', 'updated3DaysAgo', navigateToMaps),
+        createPanelItem('4', '📍', 'pipelineNetwork', 'updated5DaysAgo', navigateToMaps)
       ]
     },
     layers: {
@@ -117,7 +138,7 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
         createPanelItem('4', '📖', 'documentation', 'userGuideApi')
       ]
     }
-  }), [t, createPanelItem]);
+  }), [t, createPanelItem, navigateToMaps]);
 
   const currentPanel: PanelData | undefined = panelData[activePanel];
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import { getTranslation, TranslationKey, Language } from '../../utils/translations';
+import siriusLogo from '../../assets/images/logo-sirius.jpeg';
 import './Header.css';
 
 interface User {
@@ -18,6 +19,8 @@ interface UserMicrosite {
   url: string;
   description?: string;
   lastAccessed?: Date;
+  country: string;
+  countryFlag: string;
 }
 
 interface HeaderProps {
@@ -31,6 +34,7 @@ interface HeaderProps {
   userMicrosites?: UserMicrosite[];
   onSyncMicrosites?: () => void;
   isLoadingMicrosites?: boolean;
+  onNavigateHome?: () => void;
 }
 
 // Helper function to get translated text
@@ -46,7 +50,8 @@ const Header: React.FC<HeaderProps> = ({
   user,
   userMicrosites = [],
   onSyncMicrosites,
-  isLoadingMicrosites = false
+  isLoadingMicrosites = false,
+  onNavigateHome
 }) => {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [appLauncherOpen, setAppLauncherOpen] = useState(false);
@@ -106,6 +111,22 @@ const Header: React.FC<HeaderProps> = ({
     onSyncMicrosites?.();
   };
 
+  const handleLogoClick = () => {
+    onNavigateHome?.();
+  };
+
+  // Group microsites by country
+  const groupedMicrosites = React.useMemo(() => {
+    const groups: { [country: string]: UserMicrosite[] } = {};
+    userMicrosites.forEach(microsite => {
+      if (!groups[microsite.country]) {
+        groups[microsite.country] = [];
+      }
+      groups[microsite.country].push(microsite);
+    });
+    return groups;
+  }, [userMicrosites]);
+
   // Click outside handlers
   const userDropdownRef = useClickOutside<HTMLDivElement>(
     () => setUserDropdownOpen(false),
@@ -128,8 +149,21 @@ const Header: React.FC<HeaderProps> = ({
           ☰
         </button>
         
-        <div className="logo-section">
-          <div className="logo-icon">S</div>
+        <div 
+          className="logo-section"
+          onClick={handleLogoClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleLogoClick();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Go to dashboard"
+          title="Go to dashboard"
+        >
+          <img src={siriusLogo} alt="Sirius Logo" className="logo-icon" />
           <div className="logo-text">
             <h1>{t('appName', currentLanguage)}</h1>
             <span>{t('appDescription', currentLanguage)}</span>
@@ -175,29 +209,40 @@ const Header: React.FC<HeaderProps> = ({
                 <p>{t('loadingApplications', currentLanguage)}</p>
               </div>
             ) : userMicrosites.length > 0 ? (
-              <div className="app-grid">
-                {userMicrosites.map((app) => (
-                  <div 
-                    key={app.id}
-                    className="app-item"
-                    onClick={() => handleMicrositeClick(app)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleMicrositeClick(app);
-                      }
-                    }}
-                    title={app.description || app.name}
-                    tabIndex={0}
-                    role="button"
-                  >
-                    <div 
-                      className="app-icon"
-                      style={{ backgroundColor: app.color }}
-                    >
-                      {app.icon}
+              <div className="app-grid-container">
+                {Object.entries(groupedMicrosites).map(([country, apps]) => (
+                  <div key={country} className="country-section">
+                    <div className="country-header">
+                      <span className="country-flag">{apps[0].countryFlag}</span>
+                      <h4 className="country-name">{country}</h4>
+                      <span className="country-count">({apps.length})</span>
                     </div>
-                    <span className="app-name">{app.name}</span>
+                    <div className="app-grid">
+                      {apps.map((app) => (
+                        <div 
+                          key={app.id}
+                          className="app-item"
+                          onClick={() => handleMicrositeClick(app)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleMicrositeClick(app);
+                            }
+                          }}
+                          title={app.description || app.name}
+                          tabIndex={0}
+                          role="button"
+                        >
+                          <div 
+                            className="app-icon"
+                            style={{ backgroundColor: app.color }}
+                          >
+                            {app.icon}
+                          </div>
+                          <span className="app-name">{app.name}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -224,6 +269,7 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
         </div>
+
 
         {/* User Avatar */}
         <div 

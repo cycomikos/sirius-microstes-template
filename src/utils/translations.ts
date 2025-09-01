@@ -1,15 +1,15 @@
 export const translations = {
   en: {
     // Header
-    myApplications: 'My Applications',
-    applicationsAvailable: 'applications available',
-    application: 'application',
-    loadingApplications: 'Loading your applications...',
-    noApplicationsAvailable: 'No applications available',
+    myApplications: 'My Microsites',
+    applicationsAvailable: 'microsites available',
+    application: 'microsite',
+    loadingApplications: 'Loading your microsites...',
+    noApplicationsAvailable: 'No microsites available',
     contactAdministrator: 'Contact your administrator to request access',
     refresh: 'Refresh',
     syncing: 'Syncing...',
-    refreshApplications: 'Refresh your available applications',
+    refreshApplications: 'Refresh your available microsites',
     
     // User Menu
     myProfile: 'My Profile',
@@ -23,7 +23,7 @@ export const translations = {
     appDescription: 'Enterprise GIS Platform',
     
     // Sidebar Navigation
-    applications: 'Applications',
+    applications: 'Microsites',
     maps: 'Maps',
     layers: 'Layers',
     data: 'Data',
@@ -51,7 +51,7 @@ export const translations = {
     readMore: 'Read More →',
     
     // Shell Panel - Common
-    totalApps: 'Total Apps',
+    totalApps: 'Total Microsites',
     accessible: 'Accessible',
     storageUsed: 'Storage Used',
     datasets: 'Datasets',
@@ -60,9 +60,9 @@ export const translations = {
     
     // Shell Panel - Applications
     recentlyAccessed: 'Recently Accessed',
-    viewRecentApps: 'View your recent applications',
+    viewRecentApps: 'View your recent microsites',
     favorites: 'Favorites',
-    quickAccessStarred: 'Quick access to starred apps',
+    quickAccessStarred: 'Quick access to starred microsites',
     analyticsDashboard: 'Analytics Dashboard',
     usageStatistics: 'Usage statistics and metrics',
     
@@ -106,15 +106,15 @@ export const translations = {
   },
   bm: {
     // Header
-    myApplications: 'Aplikasi Saya',
-    applicationsAvailable: 'aplikasi tersedia',
-    application: 'aplikasi',
-    loadingApplications: 'Memuatkan aplikasi anda...',
-    noApplicationsAvailable: 'Tiada aplikasi tersedia',
+    myApplications: 'Mikrosite Saya',
+    applicationsAvailable: 'mikrosite tersedia',
+    application: 'mikrosite',
+    loadingApplications: 'Memuatkan mikrosite anda...',
+    noApplicationsAvailable: 'Tiada mikrosite tersedia',
     contactAdministrator: 'Hubungi pentadbir untuk memohon akses',
     refresh: 'Muat Semula',
     syncing: 'Menyegerak...',
-    refreshApplications: 'Muat semula aplikasi yang tersedia',
+    refreshApplications: 'Muat semula mikrosite yang tersedia',
     
     // User Menu
     myProfile: 'Profil Saya',
@@ -128,7 +128,7 @@ export const translations = {
     appDescription: 'Platform GIS Perusahaan',
     
     // Sidebar Navigation
-    applications: 'Aplikasi',
+    applications: 'Mikrosite',
     maps: 'Peta',
     layers: 'Lapisan',
     data: 'Data',
@@ -156,7 +156,7 @@ export const translations = {
     readMore: 'Baca Lagi →',
     
     // Shell Panel - Common
-    totalApps: 'Jumlah Aplikasi',
+    totalApps: 'Jumlah Mikrosite',
     accessible: 'Boleh Diakses',
     storageUsed: 'Storan Digunakan',
     datasets: 'Set Data',
@@ -165,9 +165,9 @@ export const translations = {
     
     // Shell Panel - Applications
     recentlyAccessed: 'Baru-baru Diakses',
-    viewRecentApps: 'Lihat aplikasi terkini anda',
+    viewRecentApps: 'Lihat mikrosite terkini anda',
     favorites: 'Kegemaran',
-    quickAccessStarred: 'Akses pantas ke aplikasi berbintang',
+    quickAccessStarred: 'Akses pantas ke mikrosite berbintang',
     analyticsDashboard: 'Papan Pemuka Analitik',
     usageStatistics: 'Statistik penggunaan dan metrik',
     

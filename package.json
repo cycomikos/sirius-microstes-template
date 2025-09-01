@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@arcgis/core": "^4.28.0",
-    "@esri/calcite-components": "^2.8.0",
-    "@esri/calcite-components-react": "^2.8.0",
+    "@arcgis/core": "^4.33.0",
+    "@esri/calcite-components": "^3.2.0",
+    "@esri/calcite-components-react": "^3.2.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",

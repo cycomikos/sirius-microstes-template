@@ -32,6 +32,14 @@ body {
   overflow: hidden;
 }
 
+/* Ensure full width on mobile */
+@media (max-width: 768px) {
+  .main-layout {
+    width: 100vw;
+    margin-left: 0;
+  }
+}
+
 /* Mobile overlay */
 .mobile-overlay {
   position: fixed;

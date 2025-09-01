@@ -110,6 +110,8 @@
     z-index: 999;
     transform: translateX(-100%);
     width: 320px !important;
+    /* Ensure sidebar doesn't affect content layout */
+    margin: 0;
   }
   
   .sidebar.mobile-open {

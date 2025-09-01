@@ -36,6 +36,19 @@ export const calculateLayoutStyles = (
   panelWidth: number,
   baseWidth: number = 60
 ) => {
+  // Check if we're on mobile (using media query approach for consistency)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  
+  if (isMobile) {
+    // On mobile, sidebar is overlay, content should use full width
+    return {
+      marginLeft: '0px',
+      width: '100vw',
+      transition: 'margin-left 0.3s ease, width 0.3s ease'
+    };
+  }
+  
+  // Desktop layout with sidebar pushing content
   const sidebarWidth = sidebarExpanded ? baseWidth + panelWidth : baseWidth;
   return {
     marginLeft: `${sidebarWidth}px`,

@@ -342,14 +342,18 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .content-area {
     padding: 1rem;
     margin-left: 0 !important;
+    width: 100vw !important;
+    position: relative;
+    left: 0;
   }
   
   .content-wrapper {
     padding: 0 0.5rem;
+    max-width: 100%;
   }
   
   .microsites-grid {

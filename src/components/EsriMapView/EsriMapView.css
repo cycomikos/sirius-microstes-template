@@ -1,0 +1,220 @@
+.esri-mapview-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #f8f9fa;
+}
+
+.sirius-header {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+  padding: 20px;
+  margin: 0;
+  z-index: 10;
+}
+
+.sirius-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-icon {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.header-text h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.header-text p {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+  line-height: 1;
+}
+
+/* Calcite Shell Styles */
+.calcite-shell-container {
+  flex: 1;
+  height: calc(100% - 88px); /* Subtract header height */
+}
+
+/* ArcGIS Map Component Styles */
+arcgis-map {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+}
+
+.map-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+}
+
+/* Shell Panel Styles */
+.shell-panel-nav {
+  --calcite-shell-panel-min-width: 18rem;
+}
+
+@media (max-width: 400px) {
+  .shell-panel-nav {
+    --calcite-shell-panel-min-width: 80vw;
+  }
+}
+
+/* Map Block Styles */
+.map-block {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+/* Card Content Styles */
+.card-heading {
+  font-size: var(--calcite-font-size-md, 1rem);
+  font-weight: 500;
+}
+
+.card-description {
+  font-size: var(--calcite-font-size, 0.875rem);
+  line-height: 1.5;
+}
+
+.card-description p {
+  margin: 0 0 0.5rem 0;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+/* Widget Content Styles */
+.widget-content {
+  width: 100%;
+  height: 300px;
+  overflow: auto;
+}
+
+.widget-content .esri-widget {
+  border: none;
+  box-shadow: none;
+}
+
+.widget-content .esri-basemap-gallery {
+  background: transparent;
+}
+
+.widget-content .esri-layer-list {
+  background: transparent;
+}
+
+.widget-content .esri-legend {
+  background: transparent;
+}
+
+.widget-content .esri-print {
+  background: transparent;
+}
+
+/* Calcite Action Bar customization */
+calcite-action-bar {
+  --calcite-color-foreground-1: #ffffff;
+  --calcite-color-brand: #0079c1;
+}
+
+/* Calcite Panel customization */
+calcite-panel {
+  --calcite-color-foreground-1: #ffffff;
+}
+
+/* Dark theme support */
+.app-container.dark-theme .esri-mapview-container {
+  background-color: #1f2937;
+}
+
+.app-container.dark-theme calcite-shell {
+  --calcite-color-background: #374151;
+}
+
+.app-container.dark-theme calcite-action-bar {
+  --calcite-color-foreground-1: #374151;
+  --calcite-color-text-1: #f9fafb;
+}
+
+.app-container.dark-theme calcite-panel {
+  --calcite-color-foreground-1: #374151;
+  --calcite-color-text-1: #f9fafb;
+}
+
+.app-container.dark-theme .widget-content {
+  background-color: #374151;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .sirius-header {
+    padding: 16px;
+  }
+  
+  .header-text h1 {
+    font-size: 20px;
+  }
+  
+  .header-text p {
+    font-size: 12px;
+  }
+  
+  .calcite-shell-container {
+    height: calc(100% - 80px);
+    width: 100vw !important;
+    margin-left: 0 !important;
+  }
+  
+  .widget-content {
+    height: 250px;
+  }
+  
+  /* Make action bar more mobile-friendly */
+  calcite-shell-panel {
+    --calcite-shell-panel-width-scale-m: 90vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .sirius-header {
+    padding: 12px;
+  }
+  
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+  
+  .header-text h1 {
+    font-size: 18px;
+  }
+  
+  .widget-content {
+    height: 200px;
+  }
+}

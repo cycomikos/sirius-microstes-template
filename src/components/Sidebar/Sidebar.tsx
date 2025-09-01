@@ -14,6 +14,7 @@ interface SidebarProps {
   panelWidth: number;
   isResizing: boolean;
   onResizeStart: (e: React.MouseEvent) => void;
+  onViewChange?: (view: string) => void;
 }
 
 interface NavItem {
@@ -31,7 +32,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   currentLanguage,
   panelWidth,
   isResizing,
-  onResizeStart
+  onResizeStart,
+  onViewChange
 }) => {
   const t = useTranslation(currentLanguage);
   
@@ -83,6 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         panelWidth={panelWidth}
         isResizing={isResizing}
         onResizeStart={onResizeStart}
+        onViewChange={onViewChange}
       />
     </aside>
   );
