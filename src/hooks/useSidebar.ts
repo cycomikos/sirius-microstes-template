@@ -7,7 +7,7 @@ export const useSidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [panelWidth, setPanelWidth] = useState(() => {
     const saved = localStorage.getItem('sirius-panel-width');
-    return saved ? parseInt(saved) : 500;
+    return saved ? parseInt(saved) : 400;
   });
   const [isResizing, setIsResizing] = useState(false);
 
@@ -50,10 +50,17 @@ export const useSidebar = () => {
     if (!isResizing) return;
     
     const sidebarElement = document.querySelector('.sidebar');
-    const sidebarWidth = sidebarElement ? sidebarElement.getBoundingClientRect().width : 60;
-    const newWidth = e.clientX - sidebarWidth;
+    const shellPanelElement = document.querySelector('.shell-panel-wrapper');
+    
+    if (!sidebarElement || !shellPanelElement) return;
+    
+    const sidebarRect = sidebarElement.getBoundingClientRect();
+    const shellPanelRect = shellPanelElement.getBoundingClientRect();
+    
+    // Calculate new width based on mouse position relative to shell panel's left edge
+    const newWidth = e.clientX - shellPanelRect.left;
     const minWidth = 200;
-    const maxWidth = 500;
+    const maxWidth = 600;
     
     if (newWidth >= minWidth && newWidth <= maxWidth) {
       setPanelWidth(newWidth);

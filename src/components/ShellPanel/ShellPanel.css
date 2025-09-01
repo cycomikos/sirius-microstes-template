@@ -2,9 +2,9 @@
   position: absolute;
   left: 60px;
   top: 0;
-  width: 500px;
+  width: 400px;
   min-width: 200px;
-  max-width: 500px;
+  max-width: 600px;
   height: 100%;
   opacity: 0;
   visibility: hidden;
@@ -108,33 +108,43 @@
 /* Resize handle */
 .resize-handle {
   position: absolute;
-  right: 0;
+  right: -2px;
   top: 0;
-  width: 4px;
+  width: 8px;
   height: 100%;
-  background: transparent;
+  background: rgba(0, 150, 136, 0.1);
   cursor: col-resize;
   z-index: 10;
   transition: background-color 0.2s ease;
+  border-radius: 0 4px 4px 0;
 }
 
 .resize-handle:hover {
   background: var(--petronas-teal-primary);
+  width: 6px;
+  right: -1px;
 }
 
 .shell-panel-wrapper.resizing .resize-handle {
   background: var(--petronas-teal-primary);
+  width: 6px;
+  right: -1px;
 }
 
 .shell-panel-wrapper.resizing {
   transition: none;
 }
 
+.shell-panel-wrapper.resizing * {
+  pointer-events: none;
+  user-select: none;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .shell-panel-wrapper {
     left: 60px;
-    width: 500px;
+    max-width: min(400px, calc(100vw - 120px));
   }
   
   .resize-handle {
