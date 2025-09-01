@@ -1,24 +1,30 @@
-.shell-panel {
+.shell-panel-wrapper {
   position: absolute;
   left: 60px;
   top: 0;
-  width: 260px;
+  width: 500px;
   min-width: 200px;
   max-width: 500px;
+  height: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.shell-panel-wrapper.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.shell-panel {
+  width: 100%;
   height: 100%;
   background: var(--petronas-bg-secondary);
   border-right: 1px solid var(--petronas-border-light);
   padding: 1rem;
   padding-right: 0.5rem;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s, visibility 0.3s, background-color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
   overflow-y: auto;
-}
-
-.shell-panel.visible {
-  opacity: 1;
-  visibility: visible;
 }
 
 .shell-panel-header {
@@ -116,19 +122,19 @@
   background: var(--petronas-teal-primary);
 }
 
-.shell-panel.resizing .resize-handle {
+.shell-panel-wrapper.resizing .resize-handle {
   background: var(--petronas-teal-primary);
 }
 
-.shell-panel.resizing {
+.shell-panel-wrapper.resizing {
   transition: none;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .shell-panel {
+  .shell-panel-wrapper {
     left: 60px;
-    width: 260px;
+    width: 500px;
   }
   
   .resize-handle {

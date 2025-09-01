@@ -7,7 +7,7 @@ export const useSidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [panelWidth, setPanelWidth] = useState(() => {
     const saved = localStorage.getItem('sirius-panel-width');
-    return saved ? parseInt(saved) : 260;
+    return saved ? parseInt(saved) : 500;
   });
   const [isResizing, setIsResizing] = useState(false);
 
@@ -49,7 +49,9 @@ export const useSidebar = () => {
   const handleResizeMove = useCallback((e: MouseEvent) => {
     if (!isResizing) return;
     
-    const newWidth = e.clientX - 60; // 60px is the sidebar width
+    const sidebarElement = document.querySelector('.sidebar');
+    const sidebarWidth = sidebarElement ? sidebarElement.getBoundingClientRect().width : 60;
+    const newWidth = e.clientX - sidebarWidth;
     const minWidth = 200;
     const maxWidth = 500;
     

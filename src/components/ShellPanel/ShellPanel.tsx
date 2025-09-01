@@ -203,35 +203,37 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
 
   return (
     <div 
-      className={`shell-panel ${isVisible ? 'visible' : ''} ${isResizing ? 'resizing' : ''}`}
+      className={`shell-panel-wrapper ${isVisible ? 'visible' : ''} ${isResizing ? 'resizing' : ''}`}
       style={{ width: `${panelWidth}px` }}
     >
-      <div className="shell-panel-header">
-        {currentPanel.title}
-      </div>
-      
-      {currentPanel.stats && (
-        <div className="panel-stats">
-          {currentPanel.stats.map((stat: StatCard, index: number) => (
-            <div key={index} className="stat-card">
-              <div className="stat-value">{stat.value}</div>
-              <div className="stat-label">{stat.label}</div>
+      <div className="shell-panel">
+        <div className="shell-panel-header">
+          {currentPanel.title}
+        </div>
+        
+        {currentPanel.stats && (
+          <div className="panel-stats">
+            {currentPanel.stats.map((stat: StatCard, index: number) => (
+              <div key={index} className="stat-card">
+                <div className="stat-value">{stat.value}</div>
+                <div className="stat-label">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="panel-content">
+          {currentPanel.items.map((item) => (
+            <div
+              key={item.id}
+              className="panel-item"
+              onClick={() => handleItemClick(item)}
+            >
+              <div className="panel-item-title">{item.title}</div>
+              <div className="panel-item-desc">{item.description}</div>
             </div>
           ))}
         </div>
-      )}
-
-      <div className="panel-content">
-        {currentPanel.items.map((item) => (
-          <div
-            key={item.id}
-            className="panel-item"
-            onClick={() => handleItemClick(item)}
-          >
-            <div className="panel-item-title">{item.title}</div>
-            <div className="panel-item-desc">{item.description}</div>
-          </div>
-        ))}
       </div>
       
       <div 
