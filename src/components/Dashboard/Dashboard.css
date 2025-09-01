@@ -8,21 +8,27 @@
 }
 
 .content-wrapper {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 0.5rem;
+  max-width: none;
+  margin: 0;
+  padding: 0 1rem;
 }
 
-/* Enhanced responsive spacing */
+/* Consistent spacing regardless of sidebar state */
+@media (min-width: 768px) {
+  .content-wrapper {
+    padding: 0 1.5rem;
+  }
+}
+
 @media (min-width: 1200px) {
   .content-wrapper {
-    padding: 0 1rem;
+    padding: 0 2rem;
   }
 }
 
 @media (min-width: 1600px) {
   .content-wrapper {
-    padding: 0 1.5rem;
+    padding: 0 2.5rem;
   }
 }
 
@@ -56,14 +62,13 @@
 
 .microsites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  grid-template-columns: repeat(4, 1fr);
   grid-auto-rows: 1fr;
   gap: 1.5rem;
   margin-bottom: 2rem;
   transition: all 0.3s ease;
   width: 100%;
   box-sizing: border-box;
-  padding: 0 0.25rem;
 }
 
 /* Dynamic grid adjustments based on available content width */
@@ -82,18 +87,24 @@
   
   @media (min-width: 601px) and (max-width: 900px) {
     .microsites-grid {
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+      grid-template-columns: repeat(2, 1fr) !important;
     }
   }
   
   @media (min-width: 901px) and (max-width: 1200px) {
     .microsites-grid {
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+    }
+  }
+  
+  @media (min-width: 1201px) {
+    .microsites-grid {
+      grid-template-columns: repeat(4, 1fr) !important;
     }
   }
 }
 
-/* Container queries for better responsive behavior */
+/* Container queries for 4x2 grid layout */
 @container (max-width: 600px) {
   .microsites-grid {
     grid-template-columns: 1fr;
@@ -109,9 +120,10 @@
   }
 }
 
-@container (min-width: 601px) and (max-width: 800px) {
+@container (min-width: 601px) and (max-width: 900px) {
   .microsites-grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
   }
   
   .card-image {
@@ -119,21 +131,15 @@
   }
 }
 
-@container (min-width: 801px) and (max-width: 1100px) {
+@container (min-width: 901px) and (max-width: 1200px) {
   .microsites-grid {
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@container (min-width: 1101px) and (max-width: 1400px) {
+@container (min-width: 1201px) {
   .microsites-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  }
-}
-
-@container (min-width: 1401px) {
-  .microsites-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -336,14 +342,14 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .content-area {
     padding: 1rem;
     margin-left: 0 !important;
   }
   
   .content-wrapper {
-    padding: 0 0.25rem;
+    padding: 0 0.5rem;
   }
   
   .microsites-grid {

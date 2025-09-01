@@ -14,7 +14,7 @@ interface DashboardProps {
   panelWidth: number;
 }
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 8; // Force 8 items per page
 const ERROR_DISPLAY_DURATION = 3000;
 
 const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded, panelWidth }) => {
