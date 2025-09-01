@@ -64,16 +64,18 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded,
     setCurrentPage(1);
   }, [selectedCountry]);
 
-  // Calculate the content margin based on sidebar state
+  // Calculate the content margin and available width based on sidebar state
   const contentMargin = sidebarExpanded ? `${60 + panelWidth}px` : '60px';
+  const availableWidth = sidebarExpanded ? `calc(100vw - ${60 + panelWidth}px)` : 'calc(100vw - 60px)';
   
   return (
     <main 
       className="content-area"
       style={{
         marginLeft: contentMargin,
-        transition: 'margin-left 0.3s ease'
-      }}
+        width: availableWidth,
+        transition: 'margin-left 0.3s ease, width 0.3s ease'
+      } as React.CSSProperties}
     >
       <div className="country-selector">
         <label htmlFor="country-select">{t('selectCountry')}</label>

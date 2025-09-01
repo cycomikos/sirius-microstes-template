@@ -7,7 +7,7 @@ export const useSidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [panelWidth, setPanelWidth] = useState(() => {
     const saved = localStorage.getItem('sirius-panel-width');
-    return saved ? parseInt(saved) : 400;
+    return saved ? parseInt(saved) : 320;
   });
   const [isResizing, setIsResizing] = useState(false);
 
@@ -40,9 +40,9 @@ export const useSidebar = () => {
     }
     
     // Auto-resize panel for data and version panels if current width is too small
-    if ((panel === 'data' || panel === 'version') && panelWidth < 500) {
-      setPanelWidth(500);
-      localStorage.setItem('sirius-panel-width', '500');
+    if ((panel === 'data' || panel === 'version') && panelWidth < 380) {
+      setPanelWidth(380);
+      localStorage.setItem('sirius-panel-width', '380');
     }
   };
 
@@ -134,6 +134,11 @@ export const useSidebar = () => {
     };
   }, [isMobileOpen]);
 
+  const resetPanelWidth = () => {
+    localStorage.removeItem('sirius-panel-width');
+    setPanelWidth(320);
+  };
+
   return {
     sidebarExpanded,
     activePanel,
@@ -143,6 +148,7 @@ export const useSidebar = () => {
     toggleSidebar,
     closeMobileSidebar,
     handlePanelChange,
-    handleResizeStart
+    handleResizeStart,
+    resetPanelWidth
   };
 };
