@@ -13,17 +13,22 @@ import ErrorBoundary from './components/ErrorPages/ErrorBoundary';
 import { useAuth } from './contexts/AuthContext';
 import { useTheme } from './hooks/useTheme';
 import { useSidebar } from './hooks/useSidebar';
+import { useLanguage } from './hooks/useLanguage';
 import './App.css';
 
 function App() {
   const { state, signOut } = useAuth();
   const { isDarkTheme, toggleTheme } = useTheme();
+  const { currentLanguage, toggleLanguage } = useLanguage();
   const {
     sidebarExpanded,
     activePanel,
     isMobileOpen,
+    panelWidth,
+    isResizing,
     toggleSidebar,
-    handlePanelChange
+    handlePanelChange,
+    handleResizeStart
   } = useSidebar();
 
   if (!state.isAuthenticated) {
@@ -44,8 +49,10 @@ function App() {
       <Header 
         onToggleSidebar={toggleSidebar}
         onToggleTheme={toggleTheme}
+        onToggleLanguage={toggleLanguage}
         onLogout={signOut}
         isDarkTheme={isDarkTheme}
+        currentLanguage={currentLanguage}
         user={state.user}
       />
 
@@ -57,12 +64,16 @@ function App() {
           activePanel={activePanel}
           onPanelChange={handlePanelChange}
           isMobileOpen={isMobileOpen}
+          currentLanguage={currentLanguage}
+          panelWidth={panelWidth}
+          isResizing={isResizing}
+          onResizeStart={handleResizeStart}
         />
 
         {/* Content Area with Routing */}
         <ErrorBoundary>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Dashboard currentLanguage={currentLanguage} />} />
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
             
             {/* Error Pages */}

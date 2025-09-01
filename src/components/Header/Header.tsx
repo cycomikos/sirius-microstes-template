@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
-import { User } from '../../types/auth';
 import { useClickOutside } from '../../hooks/useClickOutside';
-import { APP_CONFIG } from '../../constants';
+import { getTranslation, TranslationKey, Language } from '../../utils/translations';
 import './Header.css';
+
+interface User {
+  username: string;
+  fullName: string;
+  groups: string[];
+  token: string;
+}
 
 interface UserMicrosite {
   id: string;
@@ -17,19 +23,26 @@ interface UserMicrosite {
 interface HeaderProps {
   onToggleSidebar: () => void;
   onToggleTheme: () => void;
+  onToggleLanguage: () => void;
   onLogout: () => void;
   isDarkTheme: boolean;
+  currentLanguage: Language;
   user: User | null;
   userMicrosites?: UserMicrosite[];
   onSyncMicrosites?: () => void;
   isLoadingMicrosites?: boolean;
 }
 
+// Helper function to get translated text
+const t = (key: TranslationKey, language: Language) => getTranslation(key, language);
+
 const Header: React.FC<HeaderProps> = ({ 
   onToggleSidebar, 
   onToggleTheme, 
+  onToggleLanguage,
   onLogout, 
   isDarkTheme,
+  currentLanguage,
   user,
   userMicrosites = [],
   onSyncMicrosites,
@@ -37,22 +50,26 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [appLauncherOpen, setAppLauncherOpen] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState('en');
 
-  const userFullName = user?.fullName || 'User';
-  const userInitials = userFullName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  // Get user display info
+  const userFullName = user?.fullName || 'Development User';
+  const userUsername = user?.username || 'dev-user';
+  const userInitials = userFullName
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
-  const handleToggleLanguage = () => {
-    setCurrentLanguage(prev => prev === 'en' ? 'ms' : 'en');
-    setUserDropdownOpen(false);
-  };
-
-  const handleUserMenuClick = () => {
+  // Event handlers
+  const handleUserMenuClick = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation();
     setUserDropdownOpen(!userDropdownOpen);
     setAppLauncherOpen(false);
   };
 
-  const handleAppLauncherClick = () => {
+  const handleAppLauncherClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setAppLauncherOpen(!appLauncherOpen);
     setUserDropdownOpen(false);
   };
@@ -62,13 +79,17 @@ const Header: React.FC<HeaderProps> = ({
     setUserDropdownOpen(false);
   };
 
+  const handleLanguageToggle = () => {
+    onToggleLanguage();
+    setUserDropdownOpen(false);
+  };
+
   const handleLogout = () => {
     onLogout();
     setUserDropdownOpen(false);
   };
 
   const handleMicrositeClick = (microsite: UserMicrosite) => {
-    // Navigate to the microsite - user already has access
     if (microsite.url) {
       if (microsite.url.startsWith('http')) {
         // External URL
@@ -83,9 +104,9 @@ const Header: React.FC<HeaderProps> = ({
 
   const handleSyncMicrosites = () => {
     onSyncMicrosites?.();
-    setAppLauncherOpen(false);
   };
 
+  // Click outside handlers
   const userDropdownRef = useClickOutside<HTMLDivElement>(
     () => setUserDropdownOpen(false),
     userDropdownOpen
@@ -99,14 +120,19 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className="header">
       <div className="header-left">
-        <button className="menu-toggle" onClick={onToggleSidebar}>
+        <button 
+          className="menu-toggle" 
+          onClick={onToggleSidebar}
+          aria-label="Toggle sidebar"
+        >
           ☰
         </button>
+        
         <div className="logo-section">
           <div className="logo-icon">S</div>
           <div className="logo-text">
-            <h1>{APP_CONFIG.APP_NAME}</h1>
-            <span>{APP_CONFIG.APP_DESCRIPTION}</span>
+            <h1>{t('appName', currentLanguage)}</h1>
+            <span>{t('appDescription', currentLanguage)}</span>
           </div>
         </div>
       </div>
@@ -117,8 +143,10 @@ const Header: React.FC<HeaderProps> = ({
           <button 
             className="app-launcher-button" 
             onClick={handleAppLauncherClick}
-            title="App Launcher"
-            aria-label="Open app launcher"
+            title={t('myApplications', currentLanguage)}
+            aria-label={t('myApplications', currentLanguage)}
+            aria-expanded={appLauncherOpen}
+            aria-haspopup="true"
           >
             <div className="nine-dot-grid">
               <div className="dot"></div>
@@ -135,14 +163,16 @@ const Header: React.FC<HeaderProps> = ({
           
           <div className={`app-launcher-dropdown ${appLauncherOpen ? 'active' : ''}`}>
             <div className="app-launcher-header">
-              <h3>My Microsites</h3>
-              <p className="app-count">{userMicrosites.length} microsites available</p>
+              <h3>{t('myApplications', currentLanguage)}</h3>
+              <p className="app-count">
+                {userMicrosites.length} {userMicrosites.length !== 1 ? t('applicationsAvailable', currentLanguage) : t('application', currentLanguage)}
+              </p>
             </div>
             
             {isLoadingMicrosites ? (
               <div className="loading-state">
-                <div className="loading-spinner"></div>
-                <p>Loading your microsites...</p>
+                <div className="loading-spinner" aria-label="Loading"></div>
+                <p>{t('loadingApplications', currentLanguage)}</p>
               </div>
             ) : userMicrosites.length > 0 ? (
               <div className="app-grid">
@@ -151,7 +181,15 @@ const Header: React.FC<HeaderProps> = ({
                     key={app.id}
                     className="app-item"
                     onClick={() => handleMicrositeClick(app)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleMicrositeClick(app);
+                      }
+                    }}
                     title={app.description || app.name}
+                    tabIndex={0}
+                    role="button"
                   >
                     <div 
                       className="app-icon"
@@ -166,8 +204,10 @@ const Header: React.FC<HeaderProps> = ({
             ) : (
               <div className="empty-state">
                 <div className="empty-icon">📱</div>
-                <p>No microsite available</p>
-                <span className="empty-subtitle">Contact your administrator to request access</span>
+                <p>{t('noApplicationsAvailable', currentLanguage)}</p>
+                <span className="empty-subtitle">
+                  {t('contactAdministrator', currentLanguage)}
+                </span>
               </div>
             )}
             
@@ -176,42 +216,119 @@ const Header: React.FC<HeaderProps> = ({
                 className="sync-button"
                 onClick={handleSyncMicrosites}
                 disabled={isLoadingMicrosites}
-                title="Refresh your available applications"
+                title={t('refreshApplications', currentLanguage)}
               >
-                {isLoadingMicrosites ? '🔄 Syncing...' : '🔄 Refresh'}
+                <span>🔄</span>
+                {isLoadingMicrosites ? t('syncing', currentLanguage) : t('refresh', currentLanguage)}
               </button>
             </div>
           </div>
         </div>
 
-        {/* User Menu */}
+        {/* User Avatar */}
+        <div 
+          className="user-avatar"
+          onClick={handleUserMenuClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleUserMenuClick(e);
+            }
+          }}
+          title={`User menu for ${userFullName}`}
+          tabIndex={0}
+          role="button"
+          aria-expanded={userDropdownOpen}
+          aria-haspopup="true"
+        >
+          {userInitials}
+        </div>
+        
+        {/* User Details */}
+        <div 
+          className="user-details"
+          onClick={handleUserMenuClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleUserMenuClick(e);
+            }
+          }}
+          title={`User menu for ${userFullName}`}
+          tabIndex={0}
+          role="button"
+          aria-expanded={userDropdownOpen}
+          aria-haspopup="true"
+        >
+          <div className="user-full-name">{userFullName}</div>
+          <div className="user-username">{userUsername}</div>
+        </div>
+
+        {/* User Menu Dropdown */}
         <div className="user-menu" ref={userDropdownRef}>
-          <div 
-            className="user-info" 
-            onClick={handleUserMenuClick}
-            title={`User menu for ${userFullName}`}
-          >
-            <div className="user-avatar">
-              {userInitials}
-            </div>
-            <div className="user-details">
-              <div className="user-full-name">{userFullName}</div>
-              <div className="user-username">{user?.username || 'user'}</div>
-            </div>
-          </div>
           
-          <div className={`dropdown ${userDropdownOpen ? 'active' : ''}`}>
-            <div className="dropdown-item">
-              👤 My Profile
+          <div className={`dropdown ${userDropdownOpen ? 'active' : ''}`} role="menu">
+            <div 
+              className="dropdown-item" 
+              role="menuitem"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  // Handle profile action
+                }
+              }}
+            >
+              <span>👤</span>
+              {t('myProfile', currentLanguage)}
             </div>
-            <div className="dropdown-item" onClick={handleThemeToggle}>
-              {isDarkTheme ? '☀️' : '🌙'} Toggle Theme
+            
+            <div 
+              className="dropdown-item" 
+              onClick={handleThemeToggle}
+              role="menuitem"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleThemeToggle();
+                }
+              }}
+            >
+              <span>{isDarkTheme ? '☀️' : '🌙'}</span>
+              {isDarkTheme ? t('lightMode', currentLanguage) : t('darkMode', currentLanguage)}
             </div>
-            <div className="dropdown-item" onClick={handleToggleLanguage}>
-              🌐 Language ({currentLanguage.toUpperCase()})
+            
+            <div 
+              className="dropdown-item" 
+              onClick={handleLanguageToggle}
+              role="menuitem"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleLanguageToggle();
+                }
+              }}
+            >
+              <span>🌐</span>
+              {t('language', currentLanguage)} ({currentLanguage.toUpperCase()})
             </div>
-            <div className="dropdown-item" onClick={handleLogout}>
-              🚪 Sign Out
+            
+            <div 
+              className="dropdown-item" 
+              onClick={handleLogout}
+              role="menuitem"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleLogout();
+                }
+              }}
+            >
+              <span>🚪</span>
+              {t('signOut', currentLanguage)}
             </div>
           </div>
         </div>

@@ -3,10 +3,13 @@
   left: 60px;
   top: 0;
   width: 260px;
+  min-width: 200px;
+  max-width: 500px;
   height: 100%;
   background: var(--petronas-bg-secondary);
   border-right: 1px solid var(--petronas-border-light);
   padding: 1rem;
+  padding-right: 0.5rem;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s, background-color 0.3s ease, border-color 0.3s ease;
@@ -96,10 +99,39 @@
 
 /* Dark theme styles are handled by CSS variables */
 
+/* Resize handle */
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: transparent;
+  cursor: col-resize;
+  z-index: 10;
+  transition: background-color 0.2s ease;
+}
+
+.resize-handle:hover {
+  background: var(--petronas-teal-primary);
+}
+
+.shell-panel.resizing .resize-handle {
+  background: var(--petronas-teal-primary);
+}
+
+.shell-panel.resizing {
+  transition: none;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .shell-panel {
     left: 60px;
     width: 260px;
+  }
+  
+  .resize-handle {
+    display: none;
   }
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { APP_CONFIG } from '../../constants';
+import { getTranslation, Language, translations } from '../../utils/translations';
 import './ShellPanel.css';
 
 interface PanelItem {
@@ -24,151 +25,164 @@ interface PanelData {
 interface ShellPanelProps {
   activePanel: string;
   isVisible: boolean;
+  currentLanguage: Language;
+  panelWidth: number;
+  isResizing: boolean;
+  onResizeStart: (e: React.MouseEvent) => void;
 }
 
-const ShellPanel: React.FC<ShellPanelProps> = ({ activePanel, isVisible }) => {
+const ShellPanel: React.FC<ShellPanelProps> = ({ 
+  activePanel, 
+  isVisible, 
+  currentLanguage, 
+  panelWidth, 
+  isResizing, 
+  onResizeStart 
+}) => {
+  // Helper function to get translated text
+  const t = (key: keyof typeof translations.en) => getTranslation(key, currentLanguage);
   const panelData: Record<string, PanelData> = {
     applications: {
-      title: 'Applications',
+      title: t('applications'),
       stats: [
-        { value: '16', label: 'Total Apps' },
-        { value: '5', label: 'Accessible' }
+        { value: '16', label: t('totalApps') },
+        { value: '5', label: t('accessible') }
       ],
       items: [
         {
           id: '1',
-          title: '🔥 Recently Accessed',
-          description: 'View your recent applications',
+          title: `🔥 ${t('recentlyAccessed')}`,
+          description: t('viewRecentApps'),
           icon: '🔥'
         },
         {
           id: '2',
-          title: '⭐ Favorites',
-          description: 'Quick access to starred apps',
+          title: `⭐ ${t('favorites')}`,
+          description: t('quickAccessStarred'),
           icon: '⭐'
         },
         {
           id: '3',
-          title: '📊 Analytics Dashboard',
-          description: 'Usage statistics and metrics',
+          title: `📊 ${t('analyticsDashboard')}`,
+          description: t('usageStatistics'),
           icon: '📊'
         }
       ]
     },
     maps: {
-      title: 'Maps & Scenes',
+      title: t('mapsScenes'),
       items: [
         {
           id: '1',
-          title: '🗺️ Malaysia Base Map',
-          description: 'Updated: 2 days ago',
+          title: `🗺️ ${t('malaysiaBaseMap')}`,
+          description: t('updatedDaysAgo'),
           icon: '🗺️'
         },
         {
           id: '2',
-          title: '🌍 Global Operations',
-          description: 'Updated: 1 week ago',
+          title: `🌍 ${t('globalOperations')}`,
+          description: t('updatedWeekAgo'),
           icon: '🌍'
         },
         {
           id: '3',
-          title: '🛢️ Oil Fields Map',
-          description: 'Updated: 3 days ago',
+          title: `🛢️ ${t('oilFieldsMap')}`,
+          description: t('updated3DaysAgo'),
           icon: '🛢️'
         },
         {
           id: '4',
-          title: '📍 Pipeline Network',
-          description: 'Updated: 5 days ago',
+          title: `📍 ${t('pipelineNetwork')}`,
+          description: t('updated5DaysAgo'),
           icon: '📍'
         }
       ]
     },
     layers: {
-      title: 'Data Layers',
+      title: t('dataLayers'),
       items: [
         {
           id: '1',
-          title: '🔷 Exploration Blocks',
-          description: 'Polygon • 1,234 features',
+          title: `🔷 ${t('explorationBlocks')}`,
+          description: t('polygonFeatures'),
           icon: '🔷'
         },
         {
           id: '2',
-          title: '📍 Well Locations',
-          description: 'Point • 5,678 features',
+          title: `📍 ${t('wellLocations')}`,
+          description: t('pointFeatures'),
           icon: '📍'
         },
         {
           id: '3',
-          title: '🛤️ Pipelines',
-          description: 'Line • 890 features',
+          title: `🛤️ ${t('pipelines')}`,
+          description: t('lineFeatures'),
           icon: '🛤️'
         },
         {
           id: '4',
-          title: '🏭 Facilities',
-          description: 'Point • 345 features',
+          title: `🏭 ${t('facilities')}`,
+          description: t('pointFeatures2'),
           icon: '🏭'
         }
       ]
     },
     data: {
-      title: 'Data Management',
+      title: t('dataManagement'),
       stats: [
-        { value: '2.5TB', label: 'Storage Used' },
-        { value: '847', label: 'Datasets' }
+        { value: '2.5TB', label: t('storageUsed') },
+        { value: '847', label: t('datasets') }
       ],
       items: [
         {
           id: '1',
-          title: '📤 Upload Data',
-          description: 'Import new datasets',
+          title: `📤 ${t('uploadData')}`,
+          description: t('importDatasets'),
           icon: '📤'
         },
         {
           id: '2',
-          title: '🔄 Data Processing',
-          description: 'ETL workflows and tools',
+          title: `🔄 ${t('dataProcessing')}`,
+          description: t('etlWorkflows'),
           icon: '🔄'
         },
         {
           id: '3',
-          title: '📊 Quality Check',
-          description: 'Validation and QA tools',
+          title: `📊 ${t('qualityCheck')}`,
+          description: t('validationTools'),
           icon: '📊'
         }
       ]
     },
     version: {
-      title: 'Version Information',
+      title: t('versionInformation'),
       stats: [
-        { value: APP_CONFIG.VERSION, label: 'Version' },
-        { value: 'React', label: 'Framework' }
+        { value: APP_CONFIG.VERSION, label: t('version') },
+        { value: 'React', label: t('framework') }
       ],
       items: [
         {
           id: '1',
-          title: '📋 Application Details',
-          description: `${APP_CONFIG.APP_NAME} - ${APP_CONFIG.APP_DESCRIPTION}`,
+          title: `📋 ${t('applicationDetails')}`,
+          description: `${t('appName')} - ${t('appDescription')}`,
           icon: '📋'
         },
         {
           id: '2',
-          title: '🔧 Build Information',
-          description: 'Built with React 18.2.0 & TypeScript',
+          title: `🔧 ${t('buildInformation')}`,
+          description: t('builtWithReact'),
           icon: '🔧'
         },
         {
           id: '3',
-          title: '📅 Release Date',
-          description: 'Latest stable release',
+          title: `📅 ${t('releaseDate')}`,
+          description: t('latestRelease'),
           icon: '📅'
         },
         {
           id: '4',
-          title: '📖 Documentation',
-          description: 'User guide and API documentation',
+          title: `📖 ${t('documentation')}`,
+          description: t('userGuideApi'),
           icon: '📖'
         }
       ]
@@ -188,7 +202,10 @@ const ShellPanel: React.FC<ShellPanelProps> = ({ activePanel, isVisible }) => {
   };
 
   return (
-    <div className={`shell-panel ${isVisible ? 'visible' : ''}`}>
+    <div 
+      className={`shell-panel ${isVisible ? 'visible' : ''} ${isResizing ? 'resizing' : ''}`}
+      style={{ width: `${panelWidth}px` }}
+    >
       <div className="shell-panel-header">
         {currentPanel.title}
       </div>
@@ -216,6 +233,11 @@ const ShellPanel: React.FC<ShellPanelProps> = ({ activePanel, isVisible }) => {
           </div>
         ))}
       </div>
+      
+      <div 
+        className="resize-handle"
+        onMouseDown={onResizeStart}
+      />
     </div>
   );
 };

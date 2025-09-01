@@ -1,22 +1,27 @@
 import React from 'react';
 import { Microsite } from '../../types/microsite';
+import { getTranslation, Language, translations } from '../../utils/translations';
 
 interface MicrositeCardProps {
   microsite: Microsite;
   onAccess: (microsite: Microsite) => void;
   onRequestAccess: (microsite: Microsite) => void;
+  currentLanguage: Language;
 }
 
 const MicrositeCard: React.FC<MicrositeCardProps> = ({
   microsite,
   onAccess,
-  onRequestAccess
+  onRequestAccess,
+  currentLanguage
 }) => {
+  // Helper function to get translated text
+  const t = (key: keyof typeof translations.en) => getTranslation(key, currentLanguage);
   const renderActionButton = () => {
     if (microsite.status === 'offline') {
       return (
         <button className="btn btn-secondary" disabled>
-          SYSTEM OFFLINE
+          {t('systemOffline')}
         </button>
       );
     }
@@ -27,7 +32,7 @@ const MicrositeCard: React.FC<MicrositeCardProps> = ({
           className="btn btn-primary"
           onClick={() => onAccess(microsite)}
         >
-          GET STARTED
+          {t('getStarted')}
         </button>
       );
     }
@@ -37,7 +42,7 @@ const MicrositeCard: React.FC<MicrositeCardProps> = ({
         className="btn btn-secondary"
         onClick={() => onRequestAccess(microsite)}
       >
-        REQUEST ACCESS
+        {t('requestAccess')}
       </button>
     );
   };
@@ -50,7 +55,7 @@ const MicrositeCard: React.FC<MicrositeCardProps> = ({
       >
         <div className="card-logo">{microsite.icon}</div>
         <span className={`card-status ${microsite.status === 'online' ? 'status-online' : 'status-offline'}`}>
-          {microsite.status === 'online' ? 'Online' : 'Offline'}
+          {microsite.status === 'online' ? t('online') : t('offline')}
         </span>
       </div>
       
@@ -58,16 +63,16 @@ const MicrositeCard: React.FC<MicrositeCardProps> = ({
         <div className="card-header">
           <h3 className="card-title">{microsite.title}</h3>
           <span className={`access-badge ${microsite.hasAccess ? 'access-granted' : 'no-access'}`}>
-            {microsite.hasAccess ? 'Access Granted' : 'No Access'}
+            {microsite.hasAccess ? t('accessGranted') : t('noAccess')}
           </span>
         </div>
         
-        <p className="card-description">{microsite.description}</p>
+        <p className="card-description">{microsite.description[currentLanguage]}</p>
         
         <div className="card-actions">
           {renderActionButton()}
           <button className="btn btn-secondary">
-            Read More →
+            {t('readMore')}
           </button>
         </div>
       </div>

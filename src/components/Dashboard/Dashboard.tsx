@@ -2,13 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { CountryCode, Microsite } from '../../types/microsite';
 import { COUNTRIES } from '../../data/microsites';
 import { useMicrosites } from '../../hooks/useMicrosites';
+import { getTranslation, Language, translations } from '../../utils/translations';
 import MicrositeCard from '../MicrositeCard/MicrositeCard';
 import './Dashboard.css';
 
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+  currentLanguage: Language;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ currentLanguage }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 8;
+  
+  // Helper function to get translated text
+  const t = (key: keyof typeof translations.en) => getTranslation(key, currentLanguage);
   
   const {
     selectedCountry,
@@ -22,7 +30,7 @@ const Dashboard: React.FC = () => {
     const result = handleMicrositeAccess(microsite);
     
     if (!result.canAccess) {
-      setError(result.message || 'Access denied');
+      setError(result.message || t('accessDenied'));
       return;
     }
     
@@ -32,7 +40,7 @@ const Dashboard: React.FC = () => {
 
   const handleRequestAccess = (microsite: Microsite) => {
     // In a real app, this would make an API call
-    setError(`Access request submitted for: ${microsite.title}`);
+    setError(`${t('accessRequestSubmitted')} ${microsite.title}`);
     // Clear message after 3 seconds
     setTimeout(() => setError(null), 3000);
   };
@@ -57,7 +65,7 @@ const Dashboard: React.FC = () => {
   return (
     <main className="content-area">
       <div className="country-selector">
-        <label htmlFor="country-select">Select Country</label>
+        <label htmlFor="country-select">{t('selectCountry')}</label>
         <select 
           className="country-dropdown"
           value={selectedCountry}
@@ -84,6 +92,7 @@ const Dashboard: React.FC = () => {
             microsite={microsite}
             onAccess={handleMicrositeClick}
             onRequestAccess={handleRequestAccess}
+            currentLanguage={currentLanguage}
           />
         ))}
       </div>

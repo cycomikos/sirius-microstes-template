@@ -1,6 +1,7 @@
 import React from 'react';
 import ShellPanel from '../ShellPanel/ShellPanel';
 import { APP_CONFIG } from '../../constants';
+import { getTranslation, Language, translations } from '../../utils/translations';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -8,6 +9,10 @@ interface SidebarProps {
   activePanel: string;
   onPanelChange: (panel: string) => void;
   isMobileOpen?: boolean;
+  currentLanguage: Language;
+  panelWidth: number;
+  isResizing: boolean;
+  onResizeStart: (e: React.MouseEvent) => void;
 }
 
 interface NavItem {
@@ -21,13 +26,20 @@ const Sidebar: React.FC<SidebarProps> = ({
   isExpanded, 
   activePanel, 
   onPanelChange, 
-  isMobileOpen = false 
+  isMobileOpen = false,
+  currentLanguage,
+  panelWidth,
+  isResizing,
+  onResizeStart
 }) => {
+  // Helper function to get translated text
+  const t = (key: keyof typeof translations.en) => getTranslation(key, currentLanguage);
+  
   const navItems: NavItem[] = [
-    { id: 'applications', icon: '📱', label: 'Applications', tooltip: 'Applications' },
-    { id: 'maps', icon: '🗺️', label: 'Maps', tooltip: 'Maps & Scenes' },
-    { id: 'layers', icon: '📑', label: 'Layers', tooltip: 'Data Layers' },
-    { id: 'data', icon: '💾', label: 'Data', tooltip: 'Data Management' }
+    { id: 'applications', icon: '📱', label: t('applications'), tooltip: t('applications') },
+    { id: 'maps', icon: '🗺️', label: t('maps'), tooltip: t('mapsScenes') },
+    { id: 'layers', icon: '📑', label: t('layers'), tooltip: t('dataLayers') },
+    { id: 'data', icon: '💾', label: t('data'), tooltip: t('dataManagement') }
   ];
 
   const handleNavClick = (panelId: string) => {
@@ -57,18 +69,20 @@ const Sidebar: React.FC<SidebarProps> = ({
       
       <div 
         className={`nav-item version-info ${activePanel === 'version' ? 'active' : ''}`} 
-        data-tooltip={`Version ${APP_CONFIG.VERSION}`}
+        data-tooltip={`${t('version')} ${APP_CONFIG.VERSION}`}
         onClick={handleVersionClick}
       >
         <span className="nav-icon">❓</span>
-        <span className="nav-text">Version {APP_CONFIG.VERSION}</span>
+        <span className="nav-text">{t('version')} {APP_CONFIG.VERSION}</span>
       </div>
-      
-      <div className="resize-handle"></div>
       
       <ShellPanel 
         activePanel={activePanel} 
         isVisible={isExpanded || isMobileOpen}
+        currentLanguage={currentLanguage}
+        panelWidth={panelWidth}
+        isResizing={isResizing}
+        onResizeStart={onResizeStart}
       />
     </aside>
   );

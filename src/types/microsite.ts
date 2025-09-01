@@ -1,7 +1,10 @@
 export interface Microsite {
   id: string;
   title: string;
-  description: string;
+  description: {
+    en: string;
+    bm: string;
+  };
   status: 'online' | 'offline';
   hasAccess: boolean;
   icon: string;

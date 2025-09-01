@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BREAKPOINTS } from '../constants';
 
 export const useSidebar = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [activePanel, setActivePanel] = useState('applications');
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [panelWidth, setPanelWidth] = useState(() => {
+    const saved = localStorage.getItem('sirius-panel-width');
+    return saved ? parseInt(saved) : 260;
+  });
+  const [isResizing, setIsResizing] = useState(false);
 
   const toggleSidebar = () => {
     if (window.innerWidth <= BREAKPOINTS.MOBILE) {
@@ -21,6 +26,12 @@ export const useSidebar = () => {
   };
 
   const handlePanelChange = (panel: string) => {
+    // If clicking the same panel twice, close it
+    if (activePanel === panel && sidebarExpanded) {
+      setSidebarExpanded(false);
+      return;
+    }
+    
     setActivePanel(panel);
     
     // Auto-expand sidebar when selecting a panel on desktop
@@ -28,6 +39,48 @@ export const useSidebar = () => {
       setSidebarExpanded(true);
     }
   };
+
+  // Handle panel resize functionality
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  const handleResizeMove = useCallback((e: MouseEvent) => {
+    if (!isResizing) return;
+    
+    const newWidth = e.clientX - 60; // 60px is the sidebar width
+    const minWidth = 200;
+    const maxWidth = 500;
+    
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      setPanelWidth(newWidth);
+    }
+  }, [isResizing]);
+
+  const handleResizeEnd = useCallback(() => {
+    if (isResizing) {
+      setIsResizing(false);
+      localStorage.setItem('sirius-panel-width', panelWidth.toString());
+    }
+  }, [isResizing, panelWidth]);
+
+  // Handle resize events
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleResizeMove);
+      document.addEventListener('mouseup', handleResizeEnd);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      
+      return () => {
+        document.removeEventListener('mousemove', handleResizeMove);
+        document.removeEventListener('mouseup', handleResizeEnd);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      };
+    }
+  }, [isResizing, handleResizeMove, handleResizeEnd]);
 
   // Handle responsive behavior
   useEffect(() => {
@@ -68,8 +121,11 @@ export const useSidebar = () => {
     sidebarExpanded,
     activePanel,
     isMobileOpen,
+    panelWidth,
+    isResizing,
     toggleSidebar,
     closeMobileSidebar,
-    handlePanelChange
+    handlePanelChange,
+    handleResizeStart
   };
 };
