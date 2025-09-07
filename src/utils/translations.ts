@@ -103,6 +103,90 @@ export const translations = {
     latestRelease: 'Latest stable release',
     documentation: 'Documentation',
     userGuideApi: 'User guide and API documentation',
+    
+    // Login Page
+    authenticating: 'Authenticating...',
+    signInWithEnterprise: 'Sign in with ArcGIS Enterprise',
+    bypassAuthentication: 'Bypass Authentication (Dev Only)',
+    error: 'Error',
+    authorizedFor: 'Authorized for PETRONAS Sirius Users Only',
+    portalConfigurationMissing: 'Portal configuration is missing. Please contact administrator.',
+    invalidPortalConfiguration: 'Invalid portal configuration. Please contact administrator.',
+    authenticationFailed: 'Authentication failed. Please try again.',
+    
+    // Profile Page
+    profileTitle: 'My Profile',
+    profileSubtitle: 'Manage your account settings and preferences',
+    profileOverview: 'Profile Overview',
+    personalInformation: 'Personal Information',
+    personalInformationSubtitle: 'Your basic profile information',
+    workInformation: 'Work Information',
+    workInformationSubtitle: 'Your professional details',
+    securitySettings: 'Security Settings',
+    securitySettingsSubtitle: 'Manage your account security',
+    recentActivity: 'Recent Activity',
+    recentActivitySubtitle: 'Your recent system activity',
+    
+    // Form Fields
+    fullName: 'Full Name',
+    email: 'Email',
+    phone: 'Phone',
+    location: 'Location',
+    jobTitle: 'Job Title',
+    department: 'Department',
+    supervisor: 'Supervisor',
+    password: 'Password',
+    currentPassword: 'Current Password',
+    newPassword: 'New Password',
+    confirmPassword: 'Confirm New Password',
+    
+    // Form Actions
+    editProfile: 'Edit Profile',
+    saveChanges: 'Save Changes',
+    cancel: 'Cancel',
+    changePassword: 'Change Password',
+    updatePassword: 'Update Password',
+    
+    // Security Info
+    lastChanged: 'Last changed',
+    daysAgo: 'days ago',
+    lastLogin: 'Last Login',
+    today: 'Today',
+    at: 'at',
+    
+    // Activity Items
+    viewedRefinery: 'Viewed Refinery Operations Dashboard',
+    updatedProfile: 'Updated profile information',
+    downloadedReport: 'Downloaded exploration report',
+    signedIn: 'Signed in to system',
+    hoursAgo: 'hours ago',
+    dayAgo: 'day ago',
+    weekAgo: 'week ago',
+    
+    // Time Units
+    hour: 'hour',
+    hours: 'hours',
+    day: 'day',
+    days: 'days',
+    week: 'week',
+    weeks: 'weeks',
+    month: 'month',
+    months: 'months',
+    
+    // Messages
+    profileUpdated: 'Profile updated successfully',
+    passwordChanged: 'Password changed successfully',
+    passwordMismatch: 'New passwords do not match',
+    passwordTooShort: 'Password must be at least 8 characters long',
+    closeNotification: 'Close notification',
+    
+    // User Defaults
+    userName: 'User Name',
+    userEmail: 'user@petronas.com',
+    defaultDepartment: 'Geospatial Data Operations',
+    defaultLocation: 'Malaysia',
+    defaultJobTitle: 'GIS Analyst',
+    defaultSupervisor: 'Ahmad Rahman',
   },
   bm: {
     // Header
@@ -208,6 +292,90 @@ export const translations = {
     latestRelease: 'Keluaran stabil terkini',
     documentation: 'Dokumentasi',
     userGuideApi: 'Panduan pengguna dan dokumentasi API',
+    
+    // Login Page
+    authenticating: 'Mengesahkan...',
+    signInWithEnterprise: 'Log masuk dengan ArcGIS Enterprise',
+    bypassAuthentication: 'Pintasan Pengesahan (Dev Sahaja)',
+    error: 'Ralat',
+    authorizedFor: 'Dibenarkan untuk Pengguna PETRONAS Sirius Sahaja',
+    portalConfigurationMissing: 'Konfigurasi portal tiada. Sila hubungi pentadbir.',
+    invalidPortalConfiguration: 'Konfigurasi portal tidak sah. Sila hubungi pentadbir.',
+    authenticationFailed: 'Pengesahan gagal. Sila cuba lagi.',
+    
+    // Profile Page
+    profileTitle: 'Profil Saya',
+    profileSubtitle: 'Urus tetapan akaun dan pilihan anda',
+    profileOverview: 'Gambaran Keseluruhan Profil',
+    personalInformation: 'Maklumat Peribadi',
+    personalInformationSubtitle: 'Maklumat profil asas anda',
+    workInformation: 'Maklumat Kerja',
+    workInformationSubtitle: 'Butiran profesional anda',
+    securitySettings: 'Tetapan Keselamatan',
+    securitySettingsSubtitle: 'Urus keselamatan akaun anda',
+    recentActivity: 'Aktiviti Terkini',
+    recentActivitySubtitle: 'Aktiviti sistem terkini anda',
+    
+    // Form Fields
+    fullName: 'Nama Penuh',
+    email: 'E-mel',
+    phone: 'Telefon',
+    location: 'Lokasi',
+    jobTitle: 'Jawatan',
+    department: 'Jabatan',
+    supervisor: 'Penyelia',
+    password: 'Kata Laluan',
+    currentPassword: 'Kata Laluan Semasa',
+    newPassword: 'Kata Laluan Baharu',
+    confirmPassword: 'Sahkan Kata Laluan Baharu',
+    
+    // Form Actions
+    editProfile: 'Edit Profil',
+    saveChanges: 'Simpan Perubahan',
+    cancel: 'Batal',
+    changePassword: 'Tukar Kata Laluan',
+    updatePassword: 'Kemas Kini Kata Laluan',
+    
+    // Security Info
+    lastChanged: 'Terakhir ditukar',
+    daysAgo: 'hari lalu',
+    lastLogin: 'Log Masuk Terakhir',
+    today: 'Hari Ini',
+    at: 'pada',
+    
+    // Activity Items
+    viewedRefinery: 'Melihat Papan Pemuka Operasi Penapisan',
+    updatedProfile: 'Mengemaskini maklumat profil',
+    downloadedReport: 'Memuat turun laporan penerokaan',
+    signedIn: 'Log masuk ke sistem',
+    hoursAgo: 'jam lalu',
+    dayAgo: 'hari lalu',
+    weekAgo: 'minggu lalu',
+    
+    // Time Units
+    hour: 'jam',
+    hours: 'jam',
+    day: 'hari',
+    days: 'hari',
+    week: 'minggu',
+    weeks: 'minggu',
+    month: 'bulan',
+    months: 'bulan',
+    
+    // Messages
+    profileUpdated: 'Profil berjaya dikemas kini',
+    passwordChanged: 'Kata laluan berjaya ditukar',
+    passwordMismatch: 'Kata laluan baharu tidak sepadan',
+    passwordTooShort: 'Kata laluan mestilah sekurang-kurangnya 8 aksara',
+    closeNotification: 'Tutup pemberitahuan',
+    
+    // User Defaults
+    userName: 'Nama Pengguna',
+    userEmail: 'pengguna@petronas.com',
+    defaultDepartment: 'Operasi Data Geospatial',
+    defaultLocation: 'Malaysia',
+    defaultJobTitle: 'Penganalisis GIS',
+    defaultSupervisor: 'Ahmad Rahman',
   }
 };
 

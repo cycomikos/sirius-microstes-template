@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import { getTranslation, TranslationKey, Language } from '../../utils/translations';
 import siriusLogo from '../../assets/images/logo-sirius.jpeg';
@@ -53,6 +54,7 @@ const Header: React.FC<HeaderProps> = ({
   isLoadingMicrosites = false,
   onNavigateHome
 }) => {
+  const navigate = useNavigate();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [appLauncherOpen, setAppLauncherOpen] = useState(false);
 
@@ -94,6 +96,11 @@ const Header: React.FC<HeaderProps> = ({
     setUserDropdownOpen(false);
   };
 
+  const handleProfileClick = () => {
+    navigate('/profile');
+    setUserDropdownOpen(false);
+  };
+
   const handleMicrositeClick = (microsite: UserMicrosite) => {
     if (microsite.url) {
       if (microsite.url.startsWith('http')) {
@@ -112,6 +119,7 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   const handleLogoClick = () => {
+    navigate('/');
     onNavigateHome?.();
   };
 
@@ -316,12 +324,13 @@ const Header: React.FC<HeaderProps> = ({
           <div className={`dropdown ${userDropdownOpen ? 'active' : ''}`} role="menu">
             <div 
               className="dropdown-item" 
+              onClick={handleProfileClick}
               role="menuitem"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  // Handle profile action
+                  handleProfileClick();
                 }
               }}
             >

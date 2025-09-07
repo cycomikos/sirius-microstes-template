@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { CalciteButton, CalciteLoader, CalciteNotice } from '@esri/calcite-components-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { InputValidator } from '../../utils/validation';
+import { getTranslation, Language } from '../../utils/translations';
+import { useLanguage } from '../../hooks/useLanguage';
 import './Login.css';
 
 interface LoginProps {
@@ -10,20 +12,24 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const { state, signIn, bypassAuth } = useAuth();
+  const { currentLanguage } = useLanguage();
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  const t = (key: keyof typeof import('../../utils/translations').translations.en) => 
+    getTranslation(key, currentLanguage as Language);
 
   const handleLogin = async () => {
     setValidationError(null);
     
     // Validate environment configuration
     if (!process.env.REACT_APP_PORTAL_URL) {
-      setValidationError('Portal configuration is missing. Please contact administrator.');
+      setValidationError(t('portalConfigurationMissing'));
       return;
     }
     
     const urlValidation = InputValidator.validateUrl(process.env.REACT_APP_PORTAL_URL);
     if (!urlValidation.isValid) {
-      setValidationError('Invalid portal configuration. Please contact administrator.');
+      setValidationError(t('invalidPortalConfiguration'));
       return;
     }
 
@@ -32,7 +38,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       onLogin();
     } catch (error) {
       console.error('Login failed:', error);
-      setValidationError('Authentication failed. Please try again.');
+      setValidationError(t('authenticationFailed'));
     }
   };
 
@@ -45,13 +51,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     <div className="login-page">
       <div className="login-card">
         <div className="login-logo">S</div>
-        <h1 className="login-title">SIRIUS Portal</h1>
-        <p className="login-subtitle">Enterprise GIS Platform</p>
+        <h1 className="login-title">{t('siriusPortal')}</h1>
+        <p className="login-subtitle">{t('enterpriseGisPlatform')}</p>
         
         {state.loading ? (
           <div className="login-loading">
-            <CalciteLoader label="Authenticating" />
-            <p>Authenticating...</p>
+            <CalciteLoader label={t('authenticating')} />
+            <p>{t('authenticating')}...</p>
           </div>
         ) : (
           <div>
@@ -62,7 +68,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               onClick={handleLogin}
               disabled={state.loading}
             >
-              Sign in with ArcGIS Enterprise
+              {t('signInWithArcgis')}
             </CalciteButton>
             
             {process.env.NODE_ENV === 'development' && (
@@ -74,7 +80,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 disabled={state.loading}
                 style={{ marginTop: '0.5rem' }}
               >
-                Bypass Authentication (Dev Only)
+                {t('bypassAuthDev')}
               </CalciteButton>
             )}
           </div>
@@ -87,13 +93,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             open={true}
             style={{ marginTop: '1rem' }}
           >
-            <div slot="title">Error</div>
+            <div slot="title">{t('error')}</div>
             <div slot="message">{validationError || state.error}</div>
           </CalciteNotice>
         )}
         
         <p className="login-disclaimer">
-          Authorized for PETRONAS Sirius Users Only
+          {t('authorizedUsersOnly')}
         </p>
       </div>
     </div>

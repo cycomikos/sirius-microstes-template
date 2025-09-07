@@ -1,0 +1,537 @@
+/* ============================================
+   PETRONAS CORPORATE PROFILE PAGE STYLES
+   Aligned with Dashboard Design Standards
+   ============================================ */
+
+/* Main Content Layout - Matches Dashboard */
+.content-area {
+  height: 100%;
+  overflow-y: auto;
+  background: var(--petronas-bg-secondary);
+  padding: 2rem;
+  transition: background-color 0.3s ease, margin-left 0.3s ease, width 0.3s ease;
+  box-sizing: border-box;
+}
+
+.content-wrapper {
+  max-width: none;
+  margin: 0;
+  padding: 0 1rem;
+}
+
+/* Profile Header Section */
+.profile-header-section {
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: var(--petronas-text-primary);
+  margin: 0 0 0.5rem 0;
+  transition: color 0.3s ease;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: var(--petronas-text-secondary);
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+/* Notifications - Corporate Style */
+.notification {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.success-notification {
+  background: rgba(40, 167, 69, 0.1);
+  color: var(--petronas-success);
+  border: 1px solid var(--petronas-success);
+}
+
+.error-notification {
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--petronas-error);
+  border: 1px solid var(--petronas-error);
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: auto;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.notification-close:hover {
+  opacity: 1;
+}
+
+/* Profile Grid - Matches Dashboard Grid System */
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+
+/* Profile Cards - Corporate Standard */
+.profile-card {
+  background: var(--petronas-bg-primary);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--petronas-shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--petronas-shadow-md);
+}
+
+/* Profile Overview Card - Full Width */
+.profile-overview-card {
+  grid-column: 1 / -1;
+}
+
+/* Card Header */
+.card-header {
+  padding: 1.5rem 1.5rem 0 1.5rem;
+  border-bottom: none;
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--petronas-text-primary);
+  margin: 0 0 0.5rem 0;
+  transition: color 0.3s ease;
+}
+
+.card-subtitle {
+  font-size: 0.875rem;
+  color: var(--petronas-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+  transition: color 0.3s ease;
+}
+
+/* Card Body */
+.card-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+/* Profile Avatar Section */
+.profile-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.profile-avatar-large {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--petronas-teal-primary), var(--petronas-teal-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: var(--petronas-white);
+  box-shadow: var(--petronas-shadow-sm);
+  transition: box-shadow 0.3s ease;
+}
+
+.user-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--petronas-text-primary);
+  margin: 0 0 0.25rem 0;
+  transition: color 0.3s ease;
+}
+
+.user-email {
+  font-size: 0.875rem;
+  color: var(--petronas-text-secondary);
+  margin: 0 0 1rem 0;
+  transition: color 0.3s ease;
+}
+
+.profile-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.group-chip {
+  padding: 0.25rem 0.75rem;
+  background: rgba(0, 161, 156, 0.1);
+  color: var(--petronas-teal-primary);
+  border: 1px solid var(--petronas-teal-primary);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* Form Elements - Corporate Standard */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--petronas-text-primary);
+  margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--petronas-border-light);
+  border-radius: 6px;
+  font-size: 1rem;
+  background: var(--petronas-bg-primary);
+  color: var(--petronas-text-primary);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--petronas-teal-primary);
+  box-shadow: 0 0 0 2px rgba(0, 161, 156, 0.2);
+}
+
+.form-input:disabled {
+  background: var(--petronas-bg-secondary);
+  color: var(--petronas-text-secondary);
+  cursor: not-allowed;
+}
+
+/* Buttons - Corporate Standard */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.btn-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--petronas-teal-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--petronas-teal-dark);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--petronas-teal-primary);
+  border: 1px solid var(--petronas-border-light);
+}
+
+.btn-secondary:hover {
+  background: var(--petronas-bg-secondary);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Security Info Section */
+.security-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.security-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--petronas-bg-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--petronas-border-light);
+  transition: all 0.3s ease;
+}
+
+.security-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--petronas-text-primary);
+  margin: 0 0 0.25rem 0;
+  transition: color 0.3s ease;
+}
+
+.security-detail {
+  font-size: 0.75rem;
+  color: var(--petronas-text-secondary);
+  transition: color 0.3s ease;
+}
+
+/* Activity List */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--petronas-border-light);
+  transition: all 0.2s ease;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-item:hover {
+  background: var(--petronas-bg-secondary);
+  margin: 0 -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--petronas-text-primary);
+  margin: 0 0 0.25rem 0;
+  transition: color 0.3s ease;
+}
+
+.activity-time {
+  font-size: 0.75rem;
+  color: var(--petronas-text-secondary);
+  transition: color 0.3s ease;
+}
+
+/* Dark Theme Specific Adjustments */
+body.dark-theme .profile-avatar-large {
+  box-shadow: var(--petronas-shadow-md);
+}
+
+body.dark-theme .security-item {
+  background: var(--petronas-bg-tertiary);
+}
+
+/* Responsive Design - Matches Dashboard */
+@media (min-width: 768px) {
+  .content-wrapper {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .content-wrapper {
+    padding: 0 2rem;
+  }
+}
+
+@media (min-width: 1600px) {
+  .content-wrapper {
+    padding: 0 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-area {
+    padding: 1rem;
+    margin-left: 0 !important;
+    width: 100vw !important;
+    position: relative;
+    left: 0;
+  }
+  
+  .content-wrapper {
+    padding: 0 0.5rem;
+    max-width: 100%;
+  }
+  
+  .profile-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .profile-avatar-section {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+  }
+  
+  .profile-avatar-large {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .form-actions {
+    justify-content: stretch;
+  }
+  
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .card-header {
+    padding: 1rem 1rem 0 1rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-area {
+    padding: 0.5rem;
+  }
+  
+  .content-wrapper {
+    padding: 0;
+  }
+  
+  .page-title {
+    font-size: 1.25rem;
+  }
+  
+  .page-subtitle {
+    font-size: 0.875rem;
+  }
+  
+  .activity-item {
+    padding: 0.75rem 0;
+  }
+  
+  .security-item {
+    padding: 0.75rem;
+  }
+}
+
+/* Focus Indicators - Corporate Standard */
+.btn:focus-visible,
+.form-input:focus-visible,
+.notification-close:focus-visible {
+  outline: 2px solid var(--petronas-teal-primary);
+  outline-offset: 2px;
+}
+
+/* Loading States */
+.loading-skeleton {
+  background: linear-gradient(90deg, 
+    var(--petronas-border-light) 25%, 
+    var(--petronas-border-medium) 50%, 
+    var(--petronas-border-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .profile-avatar-large {
+    border: 2px solid var(--petronas-text-primary);
+  }
+  
+  .profile-card {
+    border: 2px solid var(--petronas-border-medium);
+  }
+  
+  .activity-item {
+    border-bottom: 2px solid var(--petronas-border-medium);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

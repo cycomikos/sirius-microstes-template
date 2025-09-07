@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar/Sidebar';
 import Dashboard from './components/Dashboard/Dashboard';
 import EsriMapView from './components/EsriMapView/EsriMapView';
 import MapsAndScenes from './components/MapsAndScenes/MapsAndScenes';
+import Profile from './components/Profile/Profile';
 import Error400 from './components/ErrorPages/Error400';
 import Error403 from './components/ErrorPages/Error403';
 import Error404 from './components/ErrorPages/Error404';
@@ -199,6 +200,13 @@ function App() {
             } />
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
             <Route path="/maps" element={<EsriMapView />} />
+            <Route path="/profile" element={
+              <Profile 
+                currentLanguage={currentLanguage}
+                sidebarExpanded={sidebarExpanded}
+                panelWidth={panelWidth}
+              />
+            } />
             
             {/* Error Pages */}
             <Route path="/error/400" element={<Error400 />} />
