@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { logger, LogCategory } from '../../utils/logger';
 import './ErrorPages.css';
 
 interface Error500Props {
@@ -34,7 +35,7 @@ const Error500: React.FC<Error500Props> = ({ error, resetError }) => {
       userAgent: navigator.userAgent
     };
     
-    console.error('Error Report:', errorDetails);
+    logger.error('Error Report generated for user', LogCategory.UI, errorDetails);
     alert('Error report generated. Please check the console and contact support.');
   };
 

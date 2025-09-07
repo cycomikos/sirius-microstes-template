@@ -2,15 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import { getTranslation, TranslationKey, Language } from '../../utils/translations';
+import { User } from '../../types/auth';
 import siriusLogo from '../../assets/images/logo-sirius.jpeg';
 import './Header.css';
-
-interface User {
-  username: string;
-  fullName: string;
-  groups: string[];
-  token: string;
-}
 
 interface UserMicrosite {
   id: string;

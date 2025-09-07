@@ -116,7 +116,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       SessionManager.cleanup();
       groupValidationService.cleanup();
     };
-  }, [handleGroupAccessLost]);
+  }, []); // Empty dependency array - only run once on mount
 
   const checkSession = async () => {
     dispatch({ type: 'SET_LOADING', payload: true });

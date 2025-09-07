@@ -4,17 +4,17 @@ import { User } from '../types/auth';
 import { SECURITY_CONFIG } from '../constants';
 import { authLogger, securityLogger } from './logger';
 
-// Method to directly check if user can access the Sirius Users group
+// Method to directly check if user is a MEMBER of the Sirius Users group
 export const checkSiriusGroupDirectly = async (portal: Portal): Promise<boolean> => {
   try {
     if (!portal.user) {
       return false;
     }
 
-    authLogger.debug('Checking Sirius group directly', { groupId: SECURITY_CONFIG.REQUIRED_GROUP_ID });
+    authLogger.debug('Checking Sirius group membership directly', { groupId: SECURITY_CONFIG.REQUIRED_GROUP_ID });
     
-    // Try to fetch the specific Sirius Users group
-    const groupUrl = `${portal.url}/sharing/rest/community/groups/${SECURITY_CONFIG.REQUIRED_GROUP_ID}`;
+    // Check group membership using the users endpoint instead of group info
+    const userUrl = `${portal.url}/sharing/rest/community/users/${portal.user.username}`;
     
     // Get token from IdentityManager instead of portal.credential
     let token: string | undefined;
@@ -35,24 +35,38 @@ export const checkSiriusGroupDirectly = async (portal: Portal): Promise<boolean>
       token: token
     });
 
-    const response = await fetch(`${groupUrl}?${params}`);
-    const groupData = await response.json();
+    const response = await fetch(`${userUrl}?${params}`);
+    const userData = await response.json();
     
-    authLogger.debug('Direct group check result', groupData);
+    authLogger.debug('Direct user membership check result', { 
+      groups: userData.groups,
+      username: portal.user.username 
+    });
     
-    // If we can access the group data and it exists, the user has access
-    if (groupData && groupData.id === SECURITY_CONFIG.REQUIRED_GROUP_ID && !groupData.error) {
-      authLogger.info('Direct group access confirmed', { title: groupData.title });
-      return true;
+    // Check if user is actually a member of the Sirius group
+    if (userData.groups && Array.isArray(userData.groups)) {
+      const isMember = userData.groups.includes(SECURITY_CONFIG.REQUIRED_GROUP_ID);
+      if (isMember) {
+        authLogger.info('Direct group membership confirmed', { 
+          groupId: SECURITY_CONFIG.REQUIRED_GROUP_ID,
+          username: portal.user.username 
+        });
+        return true;
+      }
     }
     
-    if (groupData.error) {
-      authLogger.warn('Direct group check error', { error: groupData.error.message });
+    if (userData.error) {
+      authLogger.warn('Direct membership check error', { error: userData.error.message });
+    } else {
+      authLogger.info('User is not a member of Sirius Users group', { 
+        userGroups: userData.groups,
+        requiredGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID
+      });
     }
     
     return false;
   } catch (error) {
-    authLogger.warn('Direct group check failed', error);
+    authLogger.warn('Direct group membership check failed', error);
     return false;
   }
 };
@@ -266,17 +280,38 @@ export const createUserFromPortal = async (portal: Portal, token: string): Promi
     }
   }
   
+  // Ensure groupIds are strings, not objects
+  const cleanGroupIds: string[] = [];
+  const cleanGroupNames: string[] = [];
+  
+  groupIds.forEach((item, index) => {
+    if (typeof item === 'string') {
+      cleanGroupIds.push(item);
+      cleanGroupNames.push(groupNames[index] || 'Unknown Group');
+    } else if (typeof item === 'object' && item !== null && (item as any).id) {
+      // Handle case where group objects were added instead of IDs
+      cleanGroupIds.push((item as any).id);
+      cleanGroupNames.push((item as any).title || 'Unknown Group');
+      authLogger.debug('Extracted group from object', { 
+        id: (item as any).id, 
+        title: (item as any).title 
+      });
+    }
+  });
+  
   authLogger.info('Final user groups', {
-    totalGroups: groupIds.length,
-    hasSiriusAccess: groupIds.includes(SECURITY_CONFIG.REQUIRED_GROUP_ID),
-    siriusGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID
+    totalGroups: cleanGroupIds.length,
+    hasSiriusAccess: cleanGroupIds.includes(SECURITY_CONFIG.REQUIRED_GROUP_ID),
+    siriusGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID,
+    groupIds: cleanGroupIds,
+    groupNames: cleanGroupNames
   });
 
   return {
     username: user.username,
     fullName: user.fullName || user.username,
-    groups: groupNames, // Keep names for backward compatibility
-    groupIds: groupIds, // Add group IDs for secure validation
+    groups: cleanGroupNames, // Keep names for backward compatibility
+    groupIds: cleanGroupIds, // Add group IDs for secure validation
     token
   };
 };
@@ -293,11 +328,36 @@ export const validateSiriusAccess = (userGroupIds: string[], userGroupNames?: st
   
   securityLogger.debug('Checking for required group ID', { requiredGroupId });
   
-  if (userGroupIds.includes(requiredGroupId)) {
-    // Find the corresponding group name for logging
-    const groupIndex = userGroupIds.indexOf(requiredGroupId);
-    const matchedGroupName = userGroupNames?.[groupIndex] || SECURITY_CONFIG.REQUIRED_GROUP_NAME;
+  // Handle both string IDs and group objects (for compatibility)
+  let hasAccess = false;
+  let matchedGroupName: string = SECURITY_CONFIG.REQUIRED_GROUP_NAME;
+  
+  for (let i = 0; i < userGroupIds.length; i++) {
+    const item = userGroupIds[i];
     
+    // Check if it's a string ID or a group object
+    let groupId: string;
+    let groupName: string;
+    
+    if (typeof item === 'string') {
+      groupId = item;
+      groupName = userGroupNames?.[i] || SECURITY_CONFIG.REQUIRED_GROUP_NAME;
+    } else if (typeof item === 'object' && item !== null) {
+      // Handle group objects that might be passed instead of IDs
+      groupId = (item as any).id;
+      groupName = (item as any).title || SECURITY_CONFIG.REQUIRED_GROUP_NAME;
+    } else {
+      continue;
+    }
+    
+    if (groupId === requiredGroupId) {
+      hasAccess = true;
+      matchedGroupName = groupName;
+      break;
+    }
+  }
+  
+  if (hasAccess) {
     securityLogger.info('Sirius access GRANTED', { matchedGroupName, groupId: requiredGroupId });
     return { 
       hasAccess: true, 

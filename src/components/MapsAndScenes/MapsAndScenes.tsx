@@ -2,6 +2,7 @@ import React, { useMemo, useCallback } from 'react';
 import { CalciteIcon } from '@esri/calcite-components-react';
 import { Language } from '../../utils/translations';
 import { useTranslation, calculateLayoutStyles } from '../../utils/componentHelpers';
+import { logger, LogCategory } from '../../utils/logger';
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
 import './MapsAndScenes.css';
 
@@ -42,7 +43,7 @@ const MapsAndScenes: React.FC<MapsAndScenesProps> = ({ currentLanguage = 'en', s
   ], [t]);
 
   const handleBreadcrumbNavigate = useCallback((href: string) => {
-    console.log('Navigating to:', href);
+    logger.debug('Navigating to breadcrumb', LogCategory.UI, { href });
   }, []);
 
   const mapItems: MapItem[] = [

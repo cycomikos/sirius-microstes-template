@@ -11,6 +11,7 @@ import {
   CalciteChip,
   CalciteIcon
 } from '@esri/calcite-components-react';
+import { logger, LogCategory } from '../../utils/logger';
 import './EsriMapView.css';
 
 // Declare ArcGIS Map Components for TypeScript
@@ -49,7 +50,7 @@ const EsriMapView: React.FC<EsriMapViewProps> = ({ onMapLoad }) => {
     if (!mapElement) return;
 
     const handleViewReady = () => {
-      console.log('✅ ArcGIS Map loaded successfully');
+      logger.info('ArcGIS Map loaded successfully', LogCategory.UI);
       setLoading(false);
       
       // Get map information from portal item
@@ -78,7 +79,7 @@ const EsriMapView: React.FC<EsriMapViewProps> = ({ onMapLoad }) => {
     };
 
     const handleViewError = (error: any) => {
-      console.error('❌ Failed to load ArcGIS Map:', error);
+      logger.error('Failed to load ArcGIS Map', LogCategory.UI, error);
       setLoading(false);
     };
 

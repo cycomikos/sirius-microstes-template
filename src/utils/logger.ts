@@ -110,16 +110,23 @@ class Logger {
       return;
     }
 
-    // In development, throttle non-critical messages
-    if (shouldThrottle && !isCritical) {
+    // In development, heavily throttle routine validation messages
+    const isRoutineValidation = message.includes('Validating group membership') || 
+                               message.includes('Group validation passed');
+    
+    if (isRoutineValidation && shouldThrottle) {
       return;
     }
 
-    if (this.shouldLog(LogLevel.INFO, LogCategory.GROUP_VALIDATION)) {
-      console.log(`🔍 [GROUP_VALIDATION] ${message}`, data || '');
+    // Only log if it should be logged according to level and category
+    if (this.shouldLog(isCritical ? LogLevel.INFO : LogLevel.DEBUG, LogCategory.GROUP_VALIDATION)) {
+      if (isCritical) {
+        console.log(`🔍 [GROUP_VALIDATION] ${message}`, data || '');
+      }
+      // For non-critical messages, don't log to console in development to reduce noise
     }
 
-    if (!shouldThrottle || isCritical) {
+    if (!shouldThrottle || isCritical || !isRoutineValidation) {
       this.lastGroupValidationLog = now;
     }
   }

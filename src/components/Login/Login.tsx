@@ -35,13 +35,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
 
     try {
-      console.log('🔐 LOGIN ATTEMPT STARTING...');
+      authLogger.info('Login attempt starting');
       await signIn();
-      console.log('✅ LOGIN SUCCESSFUL');
+      authLogger.info('Login successful');
       onLogin();
     } catch (error) {
-      console.error('🚫 LOGIN FAILED:', error);
-      console.error('Error details:', {
+      authLogger.error('Login failed', {
         message: error instanceof Error ? error.message : String(error),
         code: (error as any)?.code,
         userGroups: (error as any)?.userGroups,
@@ -55,10 +54,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         error.message.includes('Sirius Users') || 
         (error as any).code === 'SIRIUS_ACCESS_DENIED'
       )) {
-        console.log('🚫 Setting Sirius access denied error');
+        authLogger.warn('Sirius access denied error set');
         setValidationError(t('accessDeniedSiriusUsers'));
       } else {
-        console.log('🚫 Setting generic authentication error');
+        authLogger.warn('Generic authentication error set');
         setValidationError(t('authenticationFailed'));
       }
     }

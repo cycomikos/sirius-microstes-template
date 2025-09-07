@@ -55,7 +55,13 @@ class AuthService {
             
             // Sign out the user who lost Sirius access
             await this.signOut();
-            return null;
+            
+            // Throw error for proper handling instead of returning null
+            const accessError = new Error(`Session invalid: User '${user.username}' is no longer a member of Sirius Users group`);
+            (accessError as any).code = 'SIRIUS_ACCESS_DENIED';
+            (accessError as any).userGroups = user.groups;
+            (accessError as any).userGroupIds = user.groupIds;
+            throw accessError;
           }
         }
         

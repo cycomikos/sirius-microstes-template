@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { logger, LogCategory } from '../../utils/logger';
 import './ErrorPages.css';
 
 interface Error503Props {
@@ -18,7 +19,7 @@ const Error503: React.FC<Error503Props> = ({
     // Auto-refresh check every 30 seconds
     const interval = setInterval(() => {
       // In a real app, this would check if the service is back online
-      console.log('Checking service status...');
+      logger.debug('Performing service status check', LogCategory.UI);
     }, 30000);
 
     // Countdown timer (example for 2 hours from now)

@@ -1,4 +1,5 @@
 import { SESSION_CONFIG } from '../constants';
+import { logger, LogCategory } from './logger';
 
 export class SecurityConfig {
 
@@ -128,7 +129,7 @@ export class SessionManager {
       localStorage.clear();
       sessionStorage.clear();
     } catch (error) {
-      console.warn('Could not clear storage:', error);
+      logger.warn('Could not clear storage', LogCategory.SECURITY, error);
     }
 
     // Notify the application

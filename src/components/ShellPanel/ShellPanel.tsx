@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { APP_CONFIG } from '../../constants';
 import { Language } from '../../utils/translations';
 import { useTranslation, TranslationKey } from '../../utils/componentHelpers';
+import { logger, LogCategory } from '../../utils/logger';
 import './ShellPanel.css';
 
 interface PanelItem {
@@ -73,7 +74,7 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
     if (item.onClick) {
       item.onClick();
     } else {
-      console.log('Clicked:', item.title);
+      logger.debug('Panel item clicked', LogCategory.UI, { title: item.title });
     }
   }, []);
 

@@ -1,4 +1,5 @@
 import React, { Component, ReactNode } from 'react';
+import { logger, LogCategory } from '../../utils/logger';
 import Error500 from './Error500';
 
 interface ErrorBoundaryState {
@@ -32,7 +33,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   componentDidCatch(error: Error, errorInfo: any) {
     // Log error details
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    logger.error('ErrorBoundary caught an error', LogCategory.UI, { error: error.message, stack: error.stack, componentStack: errorInfo.componentStack });
     
     this.setState({
       error: error,
@@ -55,7 +56,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       userId: 'current-user-id' // Get from your auth context
     };
 
-    console.log('Error Report:', errorReport);
+    logger.error('Error Report generated', LogCategory.UI, errorReport);
     
     // Example: Send to error tracking service
     // fetch('/api/errors', {

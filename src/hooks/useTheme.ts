@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { InputValidator } from '../utils/validation';
+import { logger, LogCategory } from '../utils/logger';
 
 const VALID_THEMES = ['light', 'dark'] as const;
 type Theme = typeof VALID_THEMES[number];
@@ -23,7 +24,7 @@ export const useTheme = () => {
       }
     } catch (error) {
       // If localStorage is not available or fails, default to light theme
-      console.warn('Could not access theme preference:', error);
+      logger.warn('Could not access theme preference', LogCategory.UI, error);
     }
   }, []);
 
@@ -41,7 +42,7 @@ export const useTheme = () => {
       }
     } catch (error) {
       // If localStorage fails, still apply the theme visually
-      console.warn('Could not save theme preference:', error);
+      logger.warn('Could not save theme preference', LogCategory.UI, error);
     }
   };
 
