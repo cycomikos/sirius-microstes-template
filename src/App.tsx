@@ -138,6 +138,17 @@ function App() {
     setCurrentView('dashboard');
   };
 
+  // Show Error 403 if user is denied access due to Sirius Users group requirement
+  if (state.accessDenied) {
+    return (
+      <Error403 
+        requiredRole="Sirius Users Group" 
+        resource="SIRIUS Portal"
+        siriusGroupRequired={true}
+      />
+    );
+  }
+
   if (!state.isAuthenticated) {
     return <Login onLogin={() => {}} />;
   }

@@ -2,7 +2,8 @@ import IdentityManager from '@arcgis/core/identity/IdentityManager';
 import OAuthInfo from '@arcgis/core/identity/OAuthInfo';
 import Portal from '@arcgis/core/portal/Portal';
 import { User } from '../types/auth';
-import { createUserFromPortal, fetchUserGroups } from '../utils/portalUtils';
+import { createUserFromPortal, fetchUserGroups, validateSiriusAccess, logSecurityEvent } from '../utils/portalUtils';
+import { SECURITY_CONFIG } from '../constants';
 
 class AuthService {
   private oAuthInfo: OAuthInfo;
@@ -37,7 +38,27 @@ class AuthService {
         const portal = new Portal({ url: this.oAuthInfo.portalUrl });
         await portal.load();
         
-        return await createUserFromPortal(portal, credential.token);
+        const user = await createUserFromPortal(portal, credential.token);
+        
+        // Validate Sirius Users group access on session check using secure group ID
+        if (SECURITY_CONFIG.ENFORCE_GROUP_CHECK) {
+          const accessCheck = validateSiriusAccess(user.groupIds || [], user.groups);
+          
+          if (!accessCheck.hasAccess) {
+            // Log security event and sign out user
+            logSecurityEvent('ACCESS_DENIED', {
+              username: user.username,
+              groups: user.groups,
+              groupIds: user.groupIds
+            });
+            
+            // Sign out the user who lost Sirius access
+            await this.signOut();
+            return null;
+          }
+        }
+        
+        return user;
       }
       
       return null;
@@ -59,12 +80,64 @@ class AuthService {
       });
       await portal.load();
       
-      return await createUserFromPortal(portal, credential.token);
+      const user = await createUserFromPortal(portal, credential.token);
+      
+      // Validate Sirius Users group access using secure group ID
+      if (SECURITY_CONFIG.ENFORCE_GROUP_CHECK) {
+        console.log('🔒 Starting Sirius access validation for user:', user.username);
+        console.log('User group IDs:', user.groupIds);
+        console.log('User group names:', user.groups);
+        console.log('Required Sirius group ID:', SECURITY_CONFIG.REQUIRED_GROUP_ID);
+        
+        const accessCheck = validateSiriusAccess(user.groupIds || [], user.groups);
+        
+        if (!accessCheck.hasAccess) {
+          console.error('❌ SIRIUS ACCESS DENIED for user:', user.username);
+          console.error('User groups found:', user.groups);
+          console.error('User group IDs found:', user.groupIds);
+          console.error('Required group ID:', SECURITY_CONFIG.REQUIRED_GROUP_ID);
+          
+          // Log security event for access denial
+          logSecurityEvent('ACCESS_DENIED', {
+            username: user.username,
+            groups: user.groups,
+            groupIds: user.groupIds
+          });
+          
+          // Create a specific error for 403 handling
+          const accessError = new Error(`Access denied: User must be a member of Sirius Users group (ID: ${SECURITY_CONFIG.REQUIRED_GROUP_ID})`);
+          (accessError as any).code = 'SIRIUS_ACCESS_DENIED';
+          (accessError as any).httpStatus = 403;
+          (accessError as any).userGroups = user.groups;
+          (accessError as any).userGroupIds = user.groupIds;
+          throw accessError;
+        }
+        
+        console.log('✅ SIRIUS ACCESS GRANTED for user:', user.username);
+        console.log('Matched group:', accessCheck.matchedGroupName, `(${accessCheck.matchedGroupId})`);
+        
+        // Log successful access
+        logSecurityEvent('ACCESS_GRANTED', {
+          username: user.username,
+          groups: user.groups,
+          groupIds: user.groupIds,
+          matchedGroup: accessCheck.matchedGroupName,
+          matchedGroupId: accessCheck.matchedGroupId
+        });
+      }
+      
+      return user;
     } catch (error) {
       // Don't expose sensitive error details to users
       if (process.env.NODE_ENV === 'development') {
         console.error('Sign in failed:', error);
       }
+      
+      // Re-throw specific access denied errors
+      if (error instanceof Error && error.message.includes('Access denied')) {
+        throw error;
+      }
+      
       throw new Error('Authentication failed');
     }
   }
@@ -107,9 +180,7 @@ class AuthService {
 
   async validateUserAccess(userId: string, requiredGroups: string[]): Promise<boolean> {
     try {
-      if (!requiredGroups.length) return true;
-      
-      // Server-side validation by re-querying the portal
+      // Always check Sirius Users group first
       const portal = new Portal({ url: this.oAuthInfo.portalUrl });
       await portal.load();
       
@@ -118,9 +189,27 @@ class AuthService {
       }
       
       // Fetch fresh group membership from server
-      const serverGroups = await fetchUserGroups(portal, userId);
+      const { groupIds: serverGroupIds, groupNames: serverGroupNames } = await fetchUserGroups(portal, userId);
       
-      return requiredGroups.some(group => serverGroups.includes(group));
+      // First check Sirius Users access using secure group ID
+      if (SECURITY_CONFIG.ENFORCE_GROUP_CHECK) {
+        const siriusAccess = validateSiriusAccess(serverGroupIds, serverGroupNames);
+        if (!siriusAccess.hasAccess) {
+          logSecurityEvent('ACCESS_DENIED', {
+            username: userId,
+            groups: serverGroupNames,
+            groupIds: serverGroupIds
+          });
+          return false;
+        }
+      }
+      
+      // Then check additional required groups if any (using names for backward compatibility)
+      if (requiredGroups.length > 0) {
+        return requiredGroups.some(group => serverGroupNames.includes(group));
+      }
+      
+      return true;
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Server-side validation failed:', error);

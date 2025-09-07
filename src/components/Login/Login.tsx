@@ -38,7 +38,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       onLogin();
     } catch (error) {
       console.error('Login failed:', error);
-      setValidationError(t('authenticationFailed'));
+      
+      // Handle specific Sirius Users access denial
+      if (error instanceof Error && error.message.includes('Sirius Users')) {
+        setValidationError(t('accessDeniedSiriusUsers'));
+      } else {
+        setValidationError(t('authenticationFailed'));
+      }
     }
   };
 
@@ -86,7 +92,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </div>
         )}
         
-        {(state.error || validationError) && (
+        {(state.error || validationError || state.accessDenied) && (
           <CalciteNotice 
             kind="danger" 
             icon="exclamation-mark-triangle"
@@ -94,7 +100,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             style={{ marginTop: '1rem' }}
           >
             <div slot="title">{t('error')}</div>
-            <div slot="message">{validationError || state.error}</div>
+            <div slot="message">
+              {state.accessDenied ? t('accessDeniedSiriusUsers') : (validationError || state.error)}
+            </div>
           </CalciteNotice>
         )}
         

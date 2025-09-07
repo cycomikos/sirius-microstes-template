@@ -105,14 +105,24 @@ export const translations = {
     userGuideApi: 'User guide and API documentation',
     
     // Login Page
-    authenticating: 'Authenticating...',
-    signInWithEnterprise: 'Sign in with ArcGIS Enterprise',
-    bypassAuthentication: 'Bypass Authentication (Dev Only)',
+    siriusPortal: 'SIRIUS Portal',
+    enterpriseGisPlatform: 'Enterprise GIS Platform',
+    signInWithArcgis: 'Sign in with ArcGIS Enterprise',
+    bypassAuthDev: 'Bypass Authentication (Dev Only)',
+    authenticating: 'Authenticating',
+    authorizedUsersOnly: 'Authorized for PETRONAS Sirius Users Only',
     error: 'Error',
-    authorizedFor: 'Authorized for PETRONAS Sirius Users Only',
     portalConfigurationMissing: 'Portal configuration is missing. Please contact administrator.',
     invalidPortalConfiguration: 'Invalid portal configuration. Please contact administrator.',
     authenticationFailed: 'Authentication failed. Please try again.',
+    accessDeniedSiriusUsers: 'Access denied: You must be a member of the Sirius Users group to access this application. Please contact your administrator to request access.',
+    
+    // Header
+    developmentUser: 'Development User',
+    toggleSidebar: 'Toggle sidebar',
+    goToDashboard: 'Go to dashboard',
+    siriusLogo: 'Sirius Logo',
+    loading: 'Loading',
     
     // Profile Page
     profileTitle: 'My Profile',
@@ -190,6 +200,25 @@ export const translations = {
   },
   bm: {
     // Header
+    developmentUser: 'Pengguna Pembangunan',
+    toggleSidebar: 'Togol bar sisi',
+    goToDashboard: 'Pergi ke papan pemuka',
+    siriusLogo: 'Logo Sirius',
+    loading: 'Memuatkan',
+    
+    // Login Page
+    siriusPortal: 'Portal SIRIUS',
+    enterpriseGisPlatform: 'Platform GIS Perusahaan',
+    signInWithArcgis: 'Log masuk dengan ArcGIS Enterprise',
+    bypassAuthDev: 'Langkau Pengesahan (Pembangunan Sahaja)',
+    authenticating: 'Mengesahkan',
+    authorizedUsersOnly: 'Dibenarkan untuk Pengguna PETRONAS Sirius Sahaja',
+    error: 'Ralat',
+    portalConfigurationMissing: 'Konfigurasi portal hilang. Sila hubungi pentadbir.',
+    invalidPortalConfiguration: 'Konfigurasi portal tidak sah. Sila hubungi pentadbir.',
+    authenticationFailed: 'Pengesahan gagal. Sila cuba lagi.',
+    accessDeniedSiriusUsers: 'Akses ditolak: Anda mesti menjadi ahli kumpulan Pengguna Sirius untuk mengakses aplikasi ini. Sila hubungi pentadbir anda untuk memohon akses.',
+    
     myApplications: 'Mikrosite Saya',
     applicationsAvailable: 'mikrosite tersedia',
     application: 'mikrosite',
@@ -292,16 +321,6 @@ export const translations = {
     latestRelease: 'Keluaran stabil terkini',
     documentation: 'Dokumentasi',
     userGuideApi: 'Panduan pengguna dan dokumentasi API',
-    
-    // Login Page
-    authenticating: 'Mengesahkan...',
-    signInWithEnterprise: 'Log masuk dengan ArcGIS Enterprise',
-    bypassAuthentication: 'Pintasan Pengesahan (Dev Sahaja)',
-    error: 'Ralat',
-    authorizedFor: 'Dibenarkan untuk Pengguna PETRONAS Sirius Sahaja',
-    portalConfigurationMissing: 'Konfigurasi portal tiada. Sila hubungi pentadbir.',
-    invalidPortalConfiguration: 'Konfigurasi portal tidak sah. Sila hubungi pentadbir.',
-    authenticationFailed: 'Pengesahan gagal. Sila cuba lagi.',
     
     // Profile Page
     profileTitle: 'Profil Saya',

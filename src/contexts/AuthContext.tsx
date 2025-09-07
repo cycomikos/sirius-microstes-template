@@ -2,12 +2,14 @@ import React, { createContext, useContext, useReducer, useEffect, ReactNode } fr
 import { AuthState, User } from '../types/auth';
 import { authService } from '../services/authService';
 import { SecurityConfig, SessionManager } from '../utils/security';
+import { groupValidationService } from '../services/groupValidationService';
 
 interface AuthContextType {
   state: AuthState;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   bypassAuth: () => void;
+  validateGroupsNow: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,7 +17,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 type AuthAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_USER'; payload: User | null }
-  | { type: 'SET_ERROR'; payload: string | null };
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'SET_ACCESS_DENIED'; payload: { message: string; userGroups?: string[]; userGroupIds?: string[] } };
 
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
@@ -27,13 +30,23 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         user: action.payload,
         isAuthenticated: !!action.payload,
         loading: false,
-        error: null
+        error: null,
+        accessDenied: null
       };
     case 'SET_ERROR':
       return {
         ...state,
         error: action.payload,
         loading: false
+      };
+    case 'SET_ACCESS_DENIED':
+      return {
+        ...state,
+        accessDenied: action.payload,
+        loading: false,
+        error: null,
+        isAuthenticated: false,
+        user: null
       };
     default:
       return state;
@@ -44,7 +57,8 @@ const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
   loading: false,
-  error: null
+  error: null,
+  accessDenied: null
 };
 
 interface AuthProviderProps {
@@ -68,11 +82,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       signOut();
     });
 
+    // Initialize group validation service
+    groupValidationService.initialize(() => {
+      console.log('🚨 Group access lost - user removed from Sirius Users group');
+      handleGroupAccessLost();
+    });
+
     checkSession();
 
     // Cleanup on unmount
     return () => {
       SessionManager.cleanup();
+      groupValidationService.cleanup();
     };
   }, []);
 
@@ -81,9 +102,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const user = await authService.checkSession();
       dispatch({ type: 'SET_USER', payload: user });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Session check failed:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'Session check failed' });
+      
+      // Handle Sirius Users access denial specifically
+      if (error.code === 'SIRIUS_ACCESS_DENIED') {
+        dispatch({ 
+          type: 'SET_ACCESS_DENIED', 
+          payload: {
+            message: error.message,
+            userGroups: error.userGroups,
+            userGroupIds: error.userGroupIds
+          }
+        });
+      } else {
+        dispatch({ type: 'SET_ERROR', payload: 'Session check failed' });
+      }
     }
   };
 
@@ -92,9 +126,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const user = await authService.signIn();
       dispatch({ type: 'SET_USER', payload: user });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign in failed:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'Sign in failed' });
+      
+      // Handle Sirius Users access denial specifically
+      if (error.code === 'SIRIUS_ACCESS_DENIED') {
+        dispatch({ 
+          type: 'SET_ACCESS_DENIED', 
+          payload: {
+            message: error.message,
+            userGroups: error.userGroups,
+            userGroupIds: error.userGroupIds
+          }
+        });
+      } else {
+        dispatch({ type: 'SET_ERROR', payload: 'Sign in failed' });
+      }
     }
   };
 
@@ -120,18 +167,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return;
     }
 
+    // Include Sirius Users group in development bypass
     const mockUser: User = {
       username: 'dev-user',
       fullName: 'Development User',
-      groups: ['developers', 'testers'],
+      groups: ['Sirius Users', 'developers', 'testers'], // Include required group
+      groupIds: ['afa4ae2949554ec59972abebbfd0034c', 'dev-group-1', 'dev-group-2'], // Include required group ID
       token: 'dev-bypass-token'
     };
 
     dispatch({ type: 'SET_USER', payload: mockUser });
   };
 
+  const handleGroupAccessLost = () => {
+    console.error('🚨 SECURITY ALERT: User lost Sirius Users group membership');
+    
+    // Set access denied state
+    dispatch({ 
+      type: 'SET_ACCESS_DENIED', 
+      payload: {
+        message: 'Your access to SIRIUS Portal has been revoked. You are no longer a member of the Sirius Users group.',
+        userGroups: state.user?.groups,
+        userGroupIds: state.user?.groupIds
+      }
+    });
+    
+    // Clean up sessions
+    SessionManager.cleanup();
+    groupValidationService.cleanup();
+  };
+
+  const validateGroupsNow = async (): Promise<boolean> => {
+    return await groupValidationService.validateNow();
+  };
+
   return (
-    <AuthContext.Provider value={{ state, signIn, signOut, bypassAuth }}>
+    <AuthContext.Provider value={{ state, signIn, signOut, bypassAuth, validateGroupsNow }}>
       {children}
     </AuthContext.Provider>
   );

@@ -6,9 +6,11 @@ import './ErrorPages.css';
 interface Error403Props {
   requiredRole?: string;
   resource?: string;
+  siriusGroupRequired?: boolean;
+  accessRevoked?: boolean;
 }
 
-const Error403: React.FC<Error403Props> = ({ requiredRole, resource }) => {
+const Error403: React.FC<Error403Props> = ({ requiredRole, resource, siriusGroupRequired = false, accessRevoked = false }) => {
   const navigate = useNavigate();
   const { state, signOut } = useAuth();
 
@@ -48,17 +50,52 @@ const Error403: React.FC<Error403Props> = ({ requiredRole, resource }) => {
         <div className="error-content">
           <h1 className="error-title">Access Forbidden</h1>
           <p className="error-message">
-            You don't have permission to access this resource.
+            {accessRevoked ? (
+              'Your access to SIRIUS Portal has been revoked.'
+            ) : siriusGroupRequired ? (
+              'You must be a member of the Sirius Users group to access this application.'
+            ) : (
+              'You don\'t have permission to access this resource.'
+            )}
           </p>
           <p className="error-description">
-            {requiredRole ? (
-              <>This resource requires <strong>{requiredRole}</strong> privileges. </>
-            ) : null}
-            {resource ? (
-              <>You are trying to access: <strong>{resource}</strong>. </>
-            ) : null}
-            Please contact your administrator if you believe this is an error, 
-            or try logging in with different credentials.
+            {accessRevoked ? (
+              <>
+                <strong>Access Revoked:</strong> You have been removed from the <strong>Sirius Users</strong> group 
+                and no longer have permission to access this application.
+                <br/><br/>
+                This can happen when:
+                <ul style={{ textAlign: 'left', margin: '1rem 0' }}>
+                  <li>An administrator has removed you from the group</li>
+                  <li>Your role or department has changed</li>
+                  <li>Your access permissions have been updated</li>
+                </ul>
+                If you believe this is an error, please contact your administrator immediately.
+                <br/><br/>
+                <strong>Group ID:</strong> <code>afa4ae2949554ec59972abebbfd0034c</code>
+              </>
+            ) : siriusGroupRequired ? (
+              <>
+                <strong>SIRIUS Portal</strong> is restricted to authorized PETRONAS users who are members 
+                of the <strong>Sirius Users</strong> group. 
+                <br/><br/>
+                If you need access to this application, please contact your administrator 
+                or IT support to request membership in the Sirius Users group.
+                <br/><br/>
+                <strong>Group ID:</strong> <code>afa4ae2949554ec59972abebbfd0034c</code>
+              </>
+            ) : (
+              <>
+                {requiredRole ? (
+                  <>This resource requires <strong>{requiredRole}</strong> privileges. </>
+                ) : null}
+                {resource ? (
+                  <>You are trying to access: <strong>{resource}</strong>. </>
+                ) : null}
+                Please contact your administrator if you believe this is an error, 
+                or try logging in with different credentials.
+              </>
+            )}
           </p>
           {state.user && (
             <div className="user-info">

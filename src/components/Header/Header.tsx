@@ -59,7 +59,7 @@ const Header: React.FC<HeaderProps> = ({
   const [appLauncherOpen, setAppLauncherOpen] = useState(false);
 
   // Get user display info
-  const userFullName = user?.fullName || 'Development User';
+  const userFullName = user?.fullName || t('developmentUser', currentLanguage);
   const userUsername = user?.username || 'dev-user';
   const userInitials = userFullName
     .split(' ')
@@ -152,7 +152,7 @@ const Header: React.FC<HeaderProps> = ({
         <button 
           className="menu-toggle" 
           onClick={onToggleSidebar}
-          aria-label="Toggle sidebar"
+          aria-label={t('toggleSidebar', currentLanguage)}
         >
           ☰
         </button>
@@ -168,10 +168,10 @@ const Header: React.FC<HeaderProps> = ({
           }}
           role="button"
           tabIndex={0}
-          aria-label="Go to dashboard"
-          title="Go to dashboard"
+          aria-label={t('goToDashboard', currentLanguage)}
+          title={t('goToDashboard', currentLanguage)}
         >
-          <img src={siriusLogo} alt="Sirius Logo" className="logo-icon" />
+          <img src={siriusLogo} alt={t('siriusLogo', currentLanguage)} className="logo-icon" />
           <div className="logo-text">
             <h1>{t('appName', currentLanguage)}</h1>
             <span>{t('appDescription', currentLanguage)}</span>
@@ -213,7 +213,7 @@ const Header: React.FC<HeaderProps> = ({
             
             {isLoadingMicrosites ? (
               <div className="loading-state">
-                <div className="loading-spinner" aria-label="Loading"></div>
+                <div className="loading-spinner" aria-label={t('loading', currentLanguage)}></div>
                 <p>{t('loadingApplications', currentLanguage)}</p>
               </div>
             ) : userMicrosites.length > 0 ? (

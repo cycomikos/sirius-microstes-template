@@ -10,6 +10,19 @@ export const SESSION_CONFIG = {
   WARNING_THRESHOLD: 5 * 60 * 1000 // 5 minutes before expiry
 } as const;
 
+// Security Configuration
+export const SECURITY_CONFIG = {
+  REQUIRED_GROUP_ID: 'afa4ae2949554ec59972abebbfd0034c', // Sirius Users group ID
+  REQUIRED_GROUP_NAME: 'Sirius Users', // For display purposes only
+  ALLOWED_ALTERNATIVE_GROUP_IDS: [], // Add backup group IDs if needed
+  ENFORCE_GROUP_CHECK: true,
+  // Group validation intervals
+  GROUP_CHECK_INTERVAL: 5 * 60 * 1000, // Check every 5 minutes
+  GROUP_CHECK_ON_FOCUS: true, // Check when window regains focus
+  GROUP_CHECK_ON_ACTIVITY: true, // Check on user activity after idle period
+  IDLE_THRESHOLD: 10 * 60 * 1000 // Consider idle after 10 minutes
+} as const;
+
 export const UI_CONFIG = {
   DEBOUNCE_DELAY: 300,
   ANIMATION_DURATION: 300,
