@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { authLogger } from '../../utils/logger';
 import './ErrorPages.css';
 
 interface Error403Props {
@@ -36,7 +37,7 @@ const Error403: React.FC<Error403Props> = ({ requiredRole, resource, siriusGroup
       timestamp: new Date().toISOString()
     };
     
-    console.log('Access Request:', requestDetails);
+    authLogger.info('Access Request', requestDetails);
     alert('Access request submitted. You will be notified when approved.');
   };
 

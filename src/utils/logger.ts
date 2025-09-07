@@ -26,14 +26,13 @@ class Logger {
   private enabledCategories: Set<LogCategory>;
 
   private constructor() {
-    // Set log level based on environment
-    this.logLevel = process.env.NODE_ENV === 'development' ? LogLevel.DEBUG : LogLevel.WARN;
+    // Set log level based on environment - be more restrictive in production
+    this.logLevel = process.env.NODE_ENV === 'development' ? LogLevel.INFO : LogLevel.ERROR;
     
-    // Enable specific categories based on environment
+    // Enable specific categories based on environment - only critical ones in production
     this.enabledCategories = new Set([
-      LogCategory.AUTH,
       LogCategory.SECURITY,
-      ...(process.env.NODE_ENV === 'development' ? [LogCategory.GROUP_VALIDATION] : [])
+      ...(process.env.NODE_ENV === 'development' ? [LogCategory.AUTH, LogCategory.GROUP_VALIDATION] : [])
     ]);
   }
 
@@ -92,19 +91,27 @@ class Logger {
 
   // Group validation specific logging with throttling
   private lastGroupValidationLog = 0;
-  private readonly GROUP_VALIDATION_LOG_THROTTLE = 60000; // 1 minute
+  private readonly GROUP_VALIDATION_LOG_THROTTLE = 300000; // 5 minutes - very restrictive
 
   groupValidation(message: string, data?: any): void {
     const now = Date.now();
     const shouldThrottle = (now - this.lastGroupValidationLog) < this.GROUP_VALIDATION_LOG_THROTTLE;
     
-    // Always log important events (access denied, service start/stop)
-    const isImportant = message.includes('ACCESS_DENIED') || 
-                       message.includes('initialized') || 
-                       message.includes('Stopping') ||
-                       message.includes('LOST');
+    // Only log critical events (access denied, service start/stop, lost access)
+    const isCritical = message.includes('ACCESS_DENIED') || 
+                      message.includes('initialized') || 
+                      message.includes('Stopping') ||
+                      message.includes('LOST') ||
+                      message.includes('lost') ||
+                      message.includes('denied');
 
-    if (shouldThrottle && !isImportant) {
+    // In production, only log critical events
+    if (process.env.NODE_ENV === 'production' && !isCritical) {
+      return;
+    }
+
+    // In development, throttle non-critical messages
+    if (shouldThrottle && !isCritical) {
       return;
     }
 
@@ -112,7 +119,7 @@ class Logger {
       console.log(`🔍 [GROUP_VALIDATION] ${message}`, data || '');
     }
 
-    if (!shouldThrottle || isImportant) {
+    if (!shouldThrottle || isCritical) {
       this.lastGroupValidationLog = now;
     }
   }
@@ -143,6 +150,7 @@ export const authLogger = {
 };
 
 export const securityLogger = {
+  debug: (msg: string, data?: any) => logger.debug(msg, LogCategory.SECURITY, data),
   info: (msg: string, data?: any) => logger.info(msg, LogCategory.SECURITY, data),
   warn: (msg: string, data?: any) => logger.warn(msg, LogCategory.SECURITY, data),
   error: (msg: string, data?: any) => logger.error(msg, LogCategory.SECURITY, data),

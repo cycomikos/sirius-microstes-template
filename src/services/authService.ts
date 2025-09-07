@@ -82,16 +82,24 @@ class AuthService {
       
       // Validate Sirius Users group access using secure group ID
       if (SECURITY_CONFIG.ENFORCE_GROUP_CHECK) {
-        authLogger.debug('Starting Sirius access validation', {
+        authLogger.info('🔐 STARTING SIRIUS ACCESS VALIDATION', {
           username: user.username,
           groupIds: user.groupIds,
           groups: user.groups,
-          requiredGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID
+          requiredGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID,
+          enforcementEnabled: SECURITY_CONFIG.ENFORCE_GROUP_CHECK
         });
         
         const accessCheck = validateSiriusAccess(user.groupIds || [], user.groups);
         
         if (!accessCheck.hasAccess) {
+          authLogger.error('🚫 SIRIUS ACCESS DENIED - BLOCKING LOGIN', {
+            username: user.username,
+            groups: user.groups,
+            groupIds: user.groupIds,
+            requiredGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID
+          });
+          
           securityLogger.security('SIRIUS ACCESS DENIED', {
             username: user.username,
             groups: user.groups,
@@ -107,12 +115,24 @@ class AuthService {
           });
           
           // Create a specific error for 403 handling
-          const accessError = new Error(`Access denied: User must be a member of Sirius Users group (ID: ${SECURITY_CONFIG.REQUIRED_GROUP_ID})`);
+          const accessError = new Error(`Access denied: User '${user.username}' must be a member of Sirius Users group (ID: ${SECURITY_CONFIG.REQUIRED_GROUP_ID})`);
           (accessError as any).code = 'SIRIUS_ACCESS_DENIED';
           (accessError as any).httpStatus = 403;
           (accessError as any).userGroups = user.groups;
           (accessError as any).userGroupIds = user.groupIds;
+          
+          authLogger.error('🚫 THROWING ACCESS DENIED ERROR', { 
+            errorCode: (accessError as any).code,
+            errorMessage: accessError.message 
+          });
+          
           throw accessError;
+        } else {
+          authLogger.info('✅ SIRIUS ACCESS GRANTED - ALLOWING LOGIN', {
+            username: user.username,
+            matchedGroup: accessCheck.matchedGroupName,
+            matchedGroupId: accessCheck.matchedGroupId
+          });
         }
         
         authLogger.info('SIRIUS ACCESS GRANTED', {

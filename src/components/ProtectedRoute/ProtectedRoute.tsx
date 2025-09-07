@@ -2,6 +2,7 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import { CalciteLoader, CalciteNotice } from '@esri/calcite-components-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
+import { authLogger } from '../../utils/logger';
 import Login from '../Login/Login';
 
 interface ProtectedRouteProps {
@@ -28,7 +29,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           const hasAccess = await authService.validateUserAccess(state.user.username, requiredGroups);
           setHasServerSideAccess(hasAccess);
         } catch (error) {
-          console.error('Access validation failed:', error);
+          authLogger.error('Access validation failed', error);
           setHasServerSideAccess(false);
         } finally {
           setIsValidatingAccess(false);

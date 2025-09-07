@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { InputValidator } from '../../utils/validation';
 import { getTranslation, Language } from '../../utils/translations';
 import { useLanguage } from '../../hooks/useLanguage';
+import { authLogger } from '../../utils/logger';
 import './Login.css';
 
 interface LoginProps {
@@ -34,15 +35,30 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
 
     try {
+      console.log('🔐 LOGIN ATTEMPT STARTING...');
       await signIn();
+      console.log('✅ LOGIN SUCCESSFUL');
       onLogin();
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('🚫 LOGIN FAILED:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        code: (error as any)?.code,
+        userGroups: (error as any)?.userGroups,
+        userGroupIds: (error as any)?.userGroupIds
+      });
+      
+      authLogger.error('Login failed', error);
       
       // Handle specific Sirius Users access denial
-      if (error instanceof Error && error.message.includes('Sirius Users')) {
+      if (error instanceof Error && (
+        error.message.includes('Sirius Users') || 
+        (error as any).code === 'SIRIUS_ACCESS_DENIED'
+      )) {
+        console.log('🚫 Setting Sirius access denied error');
         setValidationError(t('accessDeniedSiriusUsers'));
       } else {
+        console.log('🚫 Setting generic authentication error');
         setValidationError(t('authenticationFailed'));
       }
     }

@@ -2,6 +2,7 @@ import Portal from '@arcgis/core/portal/Portal';
 import IdentityManager from '@arcgis/core/identity/IdentityManager';
 import { User } from '../types/auth';
 import { SECURITY_CONFIG } from '../constants';
+import { authLogger, securityLogger } from './logger';
 
 // Method to directly check if user can access the Sirius Users group
 export const checkSiriusGroupDirectly = async (portal: Portal): Promise<boolean> => {
@@ -10,7 +11,7 @@ export const checkSiriusGroupDirectly = async (portal: Portal): Promise<boolean>
       return false;
     }
 
-    console.log('🔍 Checking Sirius group directly:', SECURITY_CONFIG.REQUIRED_GROUP_ID);
+    authLogger.debug('Checking Sirius group directly', { groupId: SECURITY_CONFIG.REQUIRED_GROUP_ID });
     
     // Try to fetch the specific Sirius Users group
     const groupUrl = `${portal.url}/sharing/rest/community/groups/${SECURITY_CONFIG.REQUIRED_GROUP_ID}`;
@@ -21,11 +22,11 @@ export const checkSiriusGroupDirectly = async (portal: Portal): Promise<boolean>
       const credential = await IdentityManager.checkSignInStatus(portal.url);
       token = credential?.token;
     } catch (error) {
-      console.warn('No credential found for portal:', error);
+      authLogger.warn('No credential found for portal', error);
     }
     
     if (!token) {
-      console.warn('No token available for direct group check');
+      authLogger.warn('No token available for direct group check');
       return false;
     }
     
@@ -37,21 +38,21 @@ export const checkSiriusGroupDirectly = async (portal: Portal): Promise<boolean>
     const response = await fetch(`${groupUrl}?${params}`);
     const groupData = await response.json();
     
-    console.log('📋 Direct group check result:', groupData);
+    authLogger.debug('Direct group check result', groupData);
     
     // If we can access the group data and it exists, the user has access
     if (groupData && groupData.id === SECURITY_CONFIG.REQUIRED_GROUP_ID && !groupData.error) {
-      console.log('✅ Direct group access confirmed for:', groupData.title);
+      authLogger.info('Direct group access confirmed', { title: groupData.title });
       return true;
     }
     
     if (groupData.error) {
-      console.warn('Direct group check error:', groupData.error.message);
+      authLogger.warn('Direct group check error', { error: groupData.error.message });
     }
     
     return false;
   } catch (error) {
-    console.warn('Direct group check failed:', error);
+    authLogger.warn('Direct group check failed', error);
     return false;
   }
 };
@@ -71,14 +72,14 @@ export const fetchUserGroupsViaREST = async (portal: Portal): Promise<{ groupIds
       const credential = await IdentityManager.checkSignInStatus(portal.url);
       token = credential?.token;
     } catch (error) {
-      console.warn('No credential found for portal:', error);
+      authLogger.warn('No credential found for portal', error);
     }
     
     if (!token) {
       throw new Error('No authentication token available');
     }
 
-    console.log('🔍 Trying REST API method for user:', username);
+    authLogger.debug('Trying REST API method for user', { username });
     
     // Use the REST API directly to get user's groups
     const restUrl = `${portal.url}/sharing/rest/community/users/${username}`;
@@ -90,7 +91,7 @@ export const fetchUserGroupsViaREST = async (portal: Portal): Promise<{ groupIds
     const response = await fetch(`${restUrl}?${params}`);
     const userData = await response.json();
     
-    console.log('📋 REST API user data:', userData);
+    authLogger.debug('REST API user data', userData);
     
     if (userData.error) {
       throw new Error(`REST API error: ${userData.error.message}`);
@@ -103,7 +104,7 @@ export const fetchUserGroupsViaREST = async (portal: Portal): Promise<{ groupIds
     if (userData.groups && Array.isArray(userData.groups)) {
       userData.groups.forEach((groupId: string) => {
         groupIds.push(groupId);
-        console.log(`  - Group ID from REST: ${groupId}`);
+        authLogger.debug('Group ID from REST', { groupId });
       });
     }
     
@@ -121,21 +122,21 @@ export const fetchUserGroupsViaREST = async (portal: Portal): Promise<{ groupIds
         
         if (groupData && groupData.title) {
           groupNames.push(groupData.title);
-          console.log(`  - Group: ${groupData.title} (${groupId})`);
+          authLogger.debug('Group details', { title: groupData.title, groupId });
         } else {
           groupNames.push('Unknown Group');
         }
       } catch (groupError) {
-        console.warn(`Failed to fetch details for group ${groupId}:`, groupError);
+        authLogger.warn('Failed to fetch details for group', { groupId, error: groupError });
         groupNames.push('Unknown Group');
       }
     }
     
-    console.log('📊 REST API found:', groupIds.length, 'groups');
+    authLogger.info('REST API found groups', { count: groupIds.length });
     return { groupIds, groupNames };
     
   } catch (error) {
-    console.error('❌ REST API method failed:', error);
+    authLogger.error('REST API method failed', error);
     return { groupIds: [], groupNames: [] };
   }
 };
@@ -149,17 +150,17 @@ export const fetchUserGroups = async (portal: Portal, username: string): Promise
     const groupIds: string[] = [];
     const groupNames: string[] = [];
     
-    console.log('🔍 Fetching groups for user:', username);
+    authLogger.debug('Fetching groups for user', { username });
     
     // Method 1: Try to get groups directly from the portal user object (if available)
     // Note: portal.user.groups is not a standard property in ArcGIS JS API
     // This method is mainly for debugging and may not work
     if ((portal.user as any).groups && (portal.user as any).groups.length > 0) {
-      console.log('📋 Found groups in portal.user.groups:', (portal.user as any).groups.length);
+      authLogger.debug('Found groups in portal.user.groups', { count: (portal.user as any).groups.length });
       (portal.user as any).groups.forEach((group: any) => {
         groupIds.push(group.id);
         groupNames.push(group.title);
-        console.log(`  - Group: ${group.title} (${group.id})`);
+        authLogger.debug('Portal user group', { title: group.title, id: group.id });
       });
     }
     
@@ -172,18 +173,18 @@ export const fetchUserGroups = async (portal: Portal, username: string): Promise
         num: 100 // Increase limit to catch more groups
       });
       
-      console.log('🔍 Member query found:', groupQuery.results.length, 'groups');
+      authLogger.debug('Member query found groups', { count: groupQuery.results.length });
       
       // Add group IDs and names (avoid duplicates)
       groupQuery.results.forEach(group => {
         if (!groupIds.includes(group.id)) {
           groupIds.push(group.id);
           groupNames.push(group.title);
-          console.log(`  + Member of: ${group.title} (${group.id})`);
+          authLogger.debug('Member of group', { title: group.title, id: group.id });
         }
       });
     } catch (memberQueryError) {
-      console.warn('⚠️ Member query failed:', memberQueryError);
+      authLogger.warn('Member query failed', memberQueryError);
     }
     
     // Method 3: Query for groups the user owns
@@ -195,27 +196,29 @@ export const fetchUserGroups = async (portal: Portal, username: string): Promise
         num: 100
       });
       
-      console.log('🔍 Owner query found:', ownedGroupQuery.results.length, 'groups');
+      authLogger.debug('Owner query found groups', { count: ownedGroupQuery.results.length });
       
       // Add owned groups (avoid duplicates)
       ownedGroupQuery.results.forEach(group => {
         if (!groupIds.includes(group.id)) {
           groupIds.push(group.id);
           groupNames.push(group.title);
-          console.log(`  + Owner of: ${group.title} (${group.id})`);
+          authLogger.debug('Owner of group', { title: group.title, id: group.id });
         }
       });
     } catch (ownerQueryError) {
-      console.warn('⚠️ Owner query failed:', ownerQueryError);
+      authLogger.warn('Owner query failed', ownerQueryError);
     }
     
-    console.log('📊 Total groups found:', groupIds.length);
-    console.log('🎯 Looking for Sirius Users group ID:', SECURITY_CONFIG.REQUIRED_GROUP_ID);
-    console.log('✅ User has Sirius access:', groupIds.includes(SECURITY_CONFIG.REQUIRED_GROUP_ID));
+    authLogger.info('Group fetch summary', {
+      totalGroups: groupIds.length,
+      siriusGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID,
+      hasSiriusAccess: groupIds.includes(SECURITY_CONFIG.REQUIRED_GROUP_ID)
+    });
     
     return { groupIds, groupNames };
   } catch (groupError) {
-    console.error('❌ Error fetching user groups:', groupError);
+    authLogger.error('Error fetching user groups', groupError);
     return { groupIds: [], groupNames: [] };
   }
 };
@@ -226,7 +229,7 @@ export const createUserFromPortal = async (portal: Portal, token: string): Promi
     throw new Error('User not found in portal');
   }
 
-  console.log('👤 Creating user from portal for:', user.username);
+  authLogger.debug('Creating user from portal', { username: user.username });
   
   // Try multiple methods to get user groups
   let groupIds: string[] = [];
@@ -239,7 +242,7 @@ export const createUserFromPortal = async (portal: Portal, token: string): Promi
   
   // Method 2: If standard approach didn't find the required group, try REST API
   if (!groupIds.includes(SECURITY_CONFIG.REQUIRED_GROUP_ID)) {
-    console.log('⚠️ Standard method didn\'t find Sirius Users group, trying REST API...');
+    authLogger.debug('Standard method did not find Sirius Users group, trying REST API');
     const restResult = await fetchUserGroupsViaREST(portal);
     
     // Merge results (avoid duplicates)
@@ -253,17 +256,17 @@ export const createUserFromPortal = async (portal: Portal, token: string): Promi
   
   // Method 3: If still no Sirius group found, try direct group access check
   if (!groupIds.includes(SECURITY_CONFIG.REQUIRED_GROUP_ID)) {
-    console.log('⚠️ Still no Sirius group found, trying direct group check...');
+    authLogger.debug('Still no Sirius group found, trying direct group check');
     const hasDirectAccess = await checkSiriusGroupDirectly(portal);
     
     if (hasDirectAccess) {
-      console.log('✅ Direct access confirmed - adding Sirius group to user groups');
+      authLogger.info('Direct access confirmed - adding Sirius group to user groups');
       groupIds.push(SECURITY_CONFIG.REQUIRED_GROUP_ID);
       groupNames.push(SECURITY_CONFIG.REQUIRED_GROUP_NAME);
     }
   }
   
-  console.log('📊 Final user groups:', {
+  authLogger.info('Final user groups', {
     totalGroups: groupIds.length,
     hasSiriusAccess: groupIds.includes(SECURITY_CONFIG.REQUIRED_GROUP_ID),
     siriusGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID
@@ -279,33 +282,39 @@ export const createUserFromPortal = async (portal: Portal, token: string): Promi
 };
 
 export const validateSiriusAccess = (userGroupIds: string[], userGroupNames?: string[]): { hasAccess: boolean; matchedGroupId?: string; matchedGroupName?: string } => {
-  console.log('🔍 Validating Sirius access...');
-  console.log('User group IDs:', userGroupIds);
-  console.log('User group names:', userGroupNames);
-  console.log('Required group ID:', SECURITY_CONFIG.REQUIRED_GROUP_ID);
+  securityLogger.debug('Validating Sirius access', {
+    userGroupIds,
+    userGroupNames,
+    requiredGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID
+  });
   
-  // Primary validation using group IDs (more secure)
-  const allowedGroupIds = [SECURITY_CONFIG.REQUIRED_GROUP_ID, ...SECURITY_CONFIG.ALLOWED_ALTERNATIVE_GROUP_IDS];
-  console.log('Allowed group IDs:', allowedGroupIds);
+  // STRICT validation - only allow the specific Sirius Users group ID
+  const requiredGroupId = SECURITY_CONFIG.REQUIRED_GROUP_ID;
   
-  for (const groupId of allowedGroupIds) {
-    console.log(`Checking for group ID: ${groupId}`);
-    if (userGroupIds.includes(groupId)) {
-      // Find the corresponding group name for logging
-      const groupIndex = userGroupIds.indexOf(groupId);
-      const matchedGroupName = userGroupNames?.[groupIndex] || 
-        (groupId === SECURITY_CONFIG.REQUIRED_GROUP_ID ? SECURITY_CONFIG.REQUIRED_GROUP_NAME : 'Unknown Group');
-      
-      console.log('✅ Access granted! Matched group:', matchedGroupName, `(${groupId})`);
-      return { 
-        hasAccess: true, 
-        matchedGroupId: groupId,
-        matchedGroupName: matchedGroupName
-      };
-    }
+  securityLogger.debug('Checking for required group ID', { requiredGroupId });
+  
+  if (userGroupIds.includes(requiredGroupId)) {
+    // Find the corresponding group name for logging
+    const groupIndex = userGroupIds.indexOf(requiredGroupId);
+    const matchedGroupName = userGroupNames?.[groupIndex] || SECURITY_CONFIG.REQUIRED_GROUP_NAME;
+    
+    securityLogger.info('Sirius access GRANTED', { matchedGroupName, groupId: requiredGroupId });
+    return { 
+      hasAccess: true, 
+      matchedGroupId: requiredGroupId,
+      matchedGroupName: matchedGroupName
+    };
   }
   
-  console.log('❌ Access denied - no matching group found');
+  // Log detailed failure information for debugging
+  securityLogger.warn('Sirius access DENIED', {
+    username: 'checking',
+    requiredGroupId,
+    userGroupIds,
+    userGroupNames,
+    message: 'User is not a member of the Sirius Users group'
+  });
+  
   return { hasAccess: false };
 };
 
@@ -326,10 +335,8 @@ export const logSecurityEvent = (event: 'ACCESS_GRANTED' | 'ACCESS_DENIED' | 'AU
     ip: 'client-side' // Note: Real IP would come from server
   };
   
-  // In development, log to console
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Security Event:', logData);
-  }
+  // Log security event using security logger
+  securityLogger.security('Security Event', logData);
   
   // In production, this should be sent to a security audit service
   // Example: sendToAuditService(logData);

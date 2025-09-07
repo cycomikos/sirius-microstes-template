@@ -4,6 +4,7 @@ import { COUNTRIES } from '../../data/microsites';
 import { useMicrosites } from '../../hooks/useMicrosites';
 import { Language } from '../../utils/translations';
 import { useTranslation, createPageRange, scrollToElement, calculateLayoutStyles, createErrorHandler } from '../../utils/componentHelpers';
+import { authLogger } from '../../utils/logger';
 import MicrositeCard from '../MicrositeCard/MicrositeCard';
 import ErrorMessage from '../ErrorMessage/ErrorMessage';
 import Breadcrumb from '../Breadcrumb/Breadcrumb';
@@ -40,7 +41,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded,
       return;
     }
     
-    console.log('Navigating to:', microsite.title);
+    authLogger.debug('Navigating to microsite', { title: microsite.title });
   }, [handleMicrositeAccess, t]);
 
   const showError = useMemo(() => createErrorHandler(setError, { duration: ERROR_DISPLAY_DURATION }), []);
@@ -87,7 +88,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded,
   ], [t]);
 
   const handleBreadcrumbNavigate = useCallback((href: string) => {
-    console.log('Navigating to:', href);
+    authLogger.debug('Navigating to breadcrumb', { href });
     // Handle navigation logic here if needed
     // For example: window.location.href = href; or use React Router
   }, []);
