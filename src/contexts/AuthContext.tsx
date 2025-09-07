@@ -68,6 +68,24 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  const handleGroupAccessLost = React.useCallback(() => {
+    console.error('🚨 SECURITY ALERT: User lost Sirius Users group membership');
+    
+    // Set access denied state
+    dispatch({ 
+      type: 'SET_ACCESS_DENIED', 
+      payload: {
+        message: 'Your access to SIRIUS Portal has been revoked. You are no longer a member of the Sirius Users group.',
+        userGroups: state.user?.groups,
+        userGroupIds: state.user?.groupIds
+      }
+    });
+    
+    // Clean up sessions
+    SessionManager.cleanup();
+    groupValidationService.cleanup();
+  }, [state.user?.groups, state.user?.groupIds]);
+
   useEffect(() => {
     // Initialize security and session management
     const securityCheck = SecurityConfig.validateSecureContext();
@@ -95,7 +113,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       SessionManager.cleanup();
       groupValidationService.cleanup();
     };
-  }, []);
+  }, [handleGroupAccessLost]);
 
   const checkSession = async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
@@ -179,23 +197,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: 'SET_USER', payload: mockUser });
   };
 
-  const handleGroupAccessLost = () => {
-    console.error('🚨 SECURITY ALERT: User lost Sirius Users group membership');
-    
-    // Set access denied state
-    dispatch({ 
-      type: 'SET_ACCESS_DENIED', 
-      payload: {
-        message: 'Your access to SIRIUS Portal has been revoked. You are no longer a member of the Sirius Users group.',
-        userGroups: state.user?.groups,
-        userGroupIds: state.user?.groupIds
-      }
-    });
-    
-    // Clean up sessions
-    SessionManager.cleanup();
-    groupValidationService.cleanup();
-  };
+  // handleGroupAccessLost is now defined above useEffect as a useCallback
 
   const validateGroupsNow = async (): Promise<boolean> => {
     return await groupValidationService.validateNow();

@@ -1,5 +1,5 @@
 import Portal from '@arcgis/core/portal/Portal';
-import PortalGroup from '@arcgis/core/portal/PortalGroup';
+import IdentityManager from '@arcgis/core/identity/IdentityManager';
 import { User } from '../types/auth';
 import { SECURITY_CONFIG } from '../constants';
 
@@ -14,7 +14,15 @@ export const checkSiriusGroupDirectly = async (portal: Portal): Promise<boolean>
     
     // Try to fetch the specific Sirius Users group
     const groupUrl = `${portal.url}/sharing/rest/community/groups/${SECURITY_CONFIG.REQUIRED_GROUP_ID}`;
-    const token = portal.credential?.token;
+    
+    // Get token from IdentityManager instead of portal.credential
+    let token: string | undefined;
+    try {
+      const credential = await IdentityManager.checkSignInStatus(portal.url);
+      token = credential?.token;
+    } catch (error) {
+      console.warn('No credential found for portal:', error);
+    }
     
     if (!token) {
       console.warn('No token available for direct group check');
@@ -56,7 +64,15 @@ export const fetchUserGroupsViaREST = async (portal: Portal): Promise<{ groupIds
     }
 
     const username = portal.user.username;
-    const token = portal.credential?.token;
+    
+    // Get token from IdentityManager
+    let token: string | undefined;
+    try {
+      const credential = await IdentityManager.checkSignInStatus(portal.url);
+      token = credential?.token;
+    } catch (error) {
+      console.warn('No credential found for portal:', error);
+    }
     
     if (!token) {
       throw new Error('No authentication token available');
@@ -135,10 +151,12 @@ export const fetchUserGroups = async (portal: Portal, username: string): Promise
     
     console.log('🔍 Fetching groups for user:', username);
     
-    // Method 1: Try to get groups directly from the portal user object
-    if (portal.user.groups && portal.user.groups.length > 0) {
-      console.log('📋 Found groups in portal.user.groups:', portal.user.groups.length);
-      portal.user.groups.forEach(group => {
+    // Method 1: Try to get groups directly from the portal user object (if available)
+    // Note: portal.user.groups is not a standard property in ArcGIS JS API
+    // This method is mainly for debugging and may not work
+    if ((portal.user as any).groups && (portal.user as any).groups.length > 0) {
+      console.log('📋 Found groups in portal.user.groups:', (portal.user as any).groups.length);
+      (portal.user as any).groups.forEach((group: any) => {
         groupIds.push(group.id);
         groupNames.push(group.title);
         console.log(`  - Group: ${group.title} (${group.id})`);

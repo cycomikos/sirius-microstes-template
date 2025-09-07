@@ -21,7 +21,7 @@ import './App.css';
 
 function App() {
   const [currentView, setCurrentView] = React.useState('dashboard');
-  const { state, signOut } = useAuth();
+  const { state, signOut, validateGroupsNow } = useAuth();
   const { isDarkTheme, toggleTheme } = useTheme();
   const { currentLanguage, toggleLanguage } = useLanguage();
   const {
@@ -140,11 +140,15 @@ function App() {
 
   // Show Error 403 if user is denied access due to Sirius Users group requirement
   if (state.accessDenied) {
+    const isAccessRevoked = state.accessDenied.message.includes('revoked') || 
+                           state.accessDenied.message.includes('no longer a member');
+    
     return (
       <Error403 
         requiredRole="Sirius Users Group" 
         resource="SIRIUS Portal"
-        siriusGroupRequired={true}
+        siriusGroupRequired={!isAccessRevoked}
+        accessRevoked={isAccessRevoked}
       />
     );
   }
@@ -174,6 +178,7 @@ function App() {
         user={state.user}
         userMicrosites={sampleMicrosites}
         onNavigateHome={handleNavigateHome}
+        onValidateGroups={validateGroupsNow}
       />
 
       {/* Main Layout */}

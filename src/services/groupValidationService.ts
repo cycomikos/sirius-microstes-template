@@ -1,7 +1,7 @@
 import { SECURITY_CONFIG } from '../constants';
-import { authService } from './authService';
 import { validateSiriusAccess, logSecurityEvent, fetchUserGroups } from '../utils/portalUtils';
 import Portal from '@arcgis/core/portal/Portal';
+import IdentityManager from '@arcgis/core/identity/IdentityManager';
 
 export class GroupValidationService {
   private static instance: GroupValidationService;
@@ -89,11 +89,22 @@ export class GroupValidationService {
       this.isValidating = true;
       console.log(`🔍 Validating group membership (trigger: ${trigger})`);
 
-      // Get current portal instance
-      const portal = new Portal({
-        url: process.env.REACT_APP_PORTAL_URL
-      });
+      // Get current portal instance with authentication
+      const portalUrl = process.env.REACT_APP_PORTAL_URL;
+      if (!portalUrl) {
+        console.warn('⚠️ No portal URL configured');
+        return;
+      }
 
+      // Check if user is still authenticated
+      try {
+        await IdentityManager.checkSignInStatus(portalUrl);
+      } catch (error) {
+        console.warn('⚠️ User not authenticated, cannot validate groups');
+        return;
+      }
+
+      const portal = new Portal({ url: portalUrl });
       await portal.load();
 
       if (!portal.user) {
