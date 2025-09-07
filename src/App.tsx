@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import Header from './components/Header/Header';
 import Sidebar from './components/Sidebar/Sidebar';
 import Dashboard from './components/Dashboard/Dashboard';
@@ -18,9 +18,78 @@ import { useSidebar } from './hooks/useSidebar';
 import { useLanguage } from './hooks/useLanguage';
 import './App.css';
 
+// Force redirect to external portal - simplified immediate approach
+const forceRedirectToExternalPortal = () => {
+  const externalPortalUrl = 'https://publicgis.petronas.com/sirius-portal';
+  
+  console.log('🚀 App.tsx: Forcing redirect to external portal immediately');
+  
+  // Clear session storage immediately
+  try {
+    sessionStorage.clear();
+    localStorage.clear();
+  } catch (e) {
+    console.warn('Storage cleanup failed:', e);
+  }
+  
+  // Immediate redirect - no delays
+  console.log('✅ App.tsx: Executing immediate redirect to:', externalPortalUrl);
+  window.location.href = externalPortalUrl;
+};
+
+// OAuth Callback Handler Component
+const OAuthCallbackHandler: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  
+  React.useEffect(() => {
+    const error = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
+    const code = searchParams.get('code');
+    
+    console.log('🔍 OAuth Callback Handler:', {
+      currentUrl: window.location.href,
+      error,
+      errorDescription,
+      code,
+      allParams: Object.fromEntries(searchParams.entries())
+    });
+    
+    // If there's an error (including user cancellation), redirect to external portal
+    if (error) {
+      console.log('🚫 OAuth error detected, redirecting to external portal');
+      forceRedirectToExternalPortal();
+      return;
+    }
+    
+    // If no error and no code, something went wrong
+    if (!code) {
+      console.log('🔄 No OAuth code received, redirecting to external portal');
+      forceRedirectToExternalPortal();
+      return;
+    }
+    
+    // If we have a code, redirect to home page to continue authentication
+    console.log('✅ OAuth code received, redirecting to home');
+    window.location.href = '/';
+  }, [searchParams]);
+
+  // Show loading while processing
+  return (
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '100vh',
+      flexDirection: 'column'
+    }}>
+      <div style={{ marginBottom: '20px' }}>Processing authentication...</div>
+    </div>
+  );
+};
+
 function App() {
   const [currentView, setCurrentView] = React.useState('dashboard');
-  const { state, signOut } = useAuth();
+  const { state, signIn, signOut } = useAuth();
   const { isDarkTheme, toggleTheme } = useTheme();
   const { currentLanguage, toggleLanguage } = useLanguage();
   const {
@@ -33,6 +102,18 @@ function App() {
     handlePanelChange,
     handleResizeStart
   } = useSidebar();
+
+  // Auto-redirect to external portal if user cancelled authentication
+  React.useEffect(() => {
+    const userCancelled = sessionStorage.getItem('auth_cancelled');
+    if (userCancelled && !state.isAuthenticated) {
+      const timer = setTimeout(() => {
+        window.location.href = 'https://publicgis.petronas.com/sirius-portal';
+      }, 30000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [state.isAuthenticated]);
 
   // Sample microsite data for app launcher - organized by country
   const sampleMicrosites = [
@@ -148,6 +229,14 @@ function App() {
     });
   }, [state.isAuthenticated, state.loading, state.user, state.error, state.accessDenied]);
 
+  // Handle redirect when not authenticated (must be before any conditional returns)
+  React.useEffect(() => {
+    if (!state.isAuthenticated && !state.loading) {
+      console.log('🔄 Not authenticated and not loading - should trigger ArcGIS Enterprise login');
+      // Don't redirect to external portal - let AuthContext handle ArcGIS Enterprise login
+    }
+  }, [state.isAuthenticated, state.loading]);
+
   // Show Error 403 if user is denied access due to Sirius Users group requirement
   if (state.accessDenied) {
     const isAccessRevoked = state.accessDenied.message.includes('revoked') || 
@@ -176,7 +265,10 @@ function App() {
       }}>
         <div style={{ marginBottom: '20px', fontSize: '48px' }}>S</div>
         <div style={{ marginBottom: '10px', fontSize: '24px', fontWeight: 'bold' }}>SIRIUS Portal</div>
-        <div style={{ marginBottom: '20px' }}>Authenticating with ArcGIS Enterprise...</div>
+        <div style={{ marginBottom: '10px' }}>Authenticating with ArcGIS Enterprise...</div>
+        <div style={{ marginBottom: '20px', fontSize: '14px', color: '#666' }}>
+          If you cancel or close the login page, you'll be redirected to the public portal
+        </div>
         <div className="login-loading">
           <div style={{ 
             width: '40px', 
@@ -197,18 +289,102 @@ function App() {
     );
   }
 
-  // If we get here and not authenticated, something went wrong - should not happen in simplified flow
+
+
+  // If we get here and not authenticated, show login screen
   if (!state.isAuthenticated) {
-    console.log('🔄 Not authenticated and not loading - this should not happen in simplified flow');
+    console.log('🔄 Not authenticated and not loading - showing login screen');
+    
+    // Check if user previously cancelled authentication
+    const userCancelled = sessionStorage.getItem('auth_cancelled');
+    
+    if (userCancelled) {
+      // User cancelled - show message and redirect to public portal after 2 seconds
+      
+      return (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '100vh',
+          flexDirection: 'column',
+          gap: '20px'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '10px' }}>S</div>
+          <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>SIRIUS Portal</div>
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div style={{ color: '#f39c12', marginBottom: '20px' }}>
+              Authentication was cancelled
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              Redirecting you to the public portal in 30 seconds...
+            </div>
+          </div>
+          <div style={{ 
+            fontSize: '14px', 
+            color: '#666',
+            textAlign: 'center'
+          }}>
+            <a 
+              href="https://publicgis.petronas.com/sirius-portal"
+              style={{ color: '#0079c1', textDecoration: 'none', fontSize: '16px' }}
+            >
+              Continue to Public Portal Now →
+            </a>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div style={{ 
         display: 'flex', 
         justifyContent: 'center', 
         alignItems: 'center', 
         height: '100vh',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        gap: '20px'
       }}>
-        <div>Redirecting to external portal...</div>
+        <div style={{ fontSize: '48px', marginBottom: '10px' }}>S</div>
+        <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>SIRIUS Portal</div>
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          {state.error ? (
+            <div style={{ color: '#e74c3c', marginBottom: '20px' }}>
+              Authentication failed: {state.error}
+            </div>
+          ) : null}
+          <div style={{ marginBottom: '10px' }}>
+            Please sign in with your ArcGIS Enterprise account
+          </div>
+        </div>
+        <button 
+          onClick={() => signIn()}
+          style={{
+            padding: '12px 24px',
+            backgroundColor: '#0079c1',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: 'bold'
+          }}
+        >
+          Sign In with ArcGIS Enterprise
+        </button>
+        <div style={{ 
+          marginTop: '20px', 
+          fontSize: '14px', 
+          color: '#666',
+          textAlign: 'center'
+        }}>
+          <a 
+            href="https://publicgis.petronas.com/sirius-portal"
+            style={{ color: '#0079c1', textDecoration: 'none' }}
+          >
+            Or visit the public portal →
+          </a>
+        </div>
       </div>
     );
   }
@@ -280,8 +456,8 @@ function App() {
             } />
             
             {/* OAuth Callback Route */}
-            <Route path="/auth/callback" element={<Navigate to="/" replace />} />
-            <Route path="/login" element={<Navigate to="/" replace />} />
+            <Route path="/auth/callback" element={<OAuthCallbackHandler />} />
+            <Route path="/login" element={<OAuthCallbackHandler />} />
             
             {/* Error Pages */}
             <Route path="/error/400" element={<Error400 />} />

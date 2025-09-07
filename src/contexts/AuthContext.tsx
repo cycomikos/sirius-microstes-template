@@ -86,6 +86,76 @@ const getInitialState = (): AuthState => {
 
 const initialState: AuthState = getInitialState();
 
+// Set cancellation flag without immediate redirect (for user cancellation)
+const setCancellationFlag = () => {
+  authLogger.info('🚀 Setting cancellation flag for delayed redirect');
+  
+  // Set cancellation flag before clearing storage
+  try {
+    sessionStorage.setItem('auth_cancelled', 'true');
+    authLogger.info('✅ Cancellation flag set successfully');
+  } catch (e) {
+    authLogger.warn('Could not set cancellation flag', e);
+  }
+  
+  // Clear sensitive authentication data but preserve cancellation flag
+  try {
+    // Clear auth-related items specifically instead of clearing all
+    sessionStorage.removeItem('authState');
+    localStorage.clear();
+    
+    // Set the cancellation flag (if it wasn't already set)
+    sessionStorage.setItem('auth_cancelled', 'true');
+    
+    authLogger.info('🧹 Auth storage cleared, cancellation flag preserved');
+  } catch (cleanupError) {
+    authLogger.warn('⚠️ Storage cleanup failed:', cleanupError);
+  }
+  
+  // Don't redirect immediately - let the app handle it via the cancellation flag
+  // The App.tsx component will detect the flag and show the cancellation message
+  // with a 30-second countdown before redirecting
+  authLogger.info('✅ Cancellation flag set - app will handle redirect with countdown');
+};
+
+// Force immediate redirect to external portal (for callback errors, etc.)
+const forceRedirectToExternalPortal = () => {
+  const externalPortalUrl = 'https://publicgis.petronas.com/sirius-portal';
+  
+  authLogger.info('🚀 Forcing immediate redirect to external portal');
+  
+  // Clear session storage immediately
+  try {
+    sessionStorage.clear();
+    localStorage.clear();
+    authLogger.info('🧹 Storage cleared');
+  } catch (cleanupError) {
+    authLogger.warn('⚠️ Storage cleanup failed:', cleanupError);
+  }
+  
+  // Method 1: Immediate redirect - no delays, no async operations
+  authLogger.info('✅ Executing immediate redirect to:', externalPortalUrl);
+  window.location.href = externalPortalUrl;
+  
+  // Fallback method in case the first doesn't work
+  setTimeout(() => {
+    authLogger.info('✅ Fallback redirect method 1');
+    window.location.replace(externalPortalUrl);
+  }, 50);
+  
+  // Second fallback with top window
+  setTimeout(() => {
+    try {
+      if (window.top && window.top !== window) {
+        authLogger.info('✅ Fallback redirect method 2 - top window');
+        window.top.location.href = externalPortalUrl;
+      }
+    } catch (error) {
+      authLogger.warn('⚠️ Top window redirect failed:', error);
+    }
+  }, 100);
+};
+
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -147,6 +217,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   handleGroupAccessLostRef.current = handleGroupAccessLost;
 
   useEffect(() => {
+    // Check for OAuth cancellation or error parameters in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const errorDescription = urlParams.get('error_description');
+    
+    authLogger.info('🔍 Checking URL parameters on app init:', {
+      currentUrl: window.location.href,
+      urlParams: Object.fromEntries(urlParams.entries()),
+      error,
+      errorDescription
+    });
+    
+    // Handle OAuth errors (including user cancellation)
+    if (error) {
+      authLogger.info('🚫 OAuth error detected in URL:', { error, errorDescription });
+      authLogger.info('🔄 OAuth error detected - redirecting to external portal from URL params');
+      forceRedirectToExternalPortal();
+      return;
+    }
+    
     // Initialize security and session management
     const securityCheck = SecurityConfig.validateSecureContext();
     if (!securityCheck.isSecure) {
@@ -177,8 +267,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Auto-trigger authentication if not already authenticated
     // This implements the simplified flow: directly start ArcGIS Enterprise auth
-    if (!initialState.isAuthenticated) {
+    // But don't auto-sign in if user previously cancelled
+    const userCancelled = sessionStorage.getItem('auth_cancelled');
+    
+    authLogger.info('🔍 Auto-signin check:', {
+      isAuthenticated: initialState.isAuthenticated,
+      hasError: !!error,
+      userCancelled: !!userCancelled,
+      willAutoSignIn: !initialState.isAuthenticated && !error && !userCancelled
+    });
+    
+    if (!initialState.isAuthenticated && !error && !userCancelled) {
+      authLogger.info('🚀 Starting auto-signin...');
       autoSignIn();
+    } else if (userCancelled) {
+      authLogger.info('🚫 Skipping auto-signin - user previously cancelled');
     }
 
     // Cleanup on unmount
@@ -199,6 +302,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     try {
       const user = await authService.signIn();
+      
+      // Clear cancellation flag on successful login
+      sessionStorage.removeItem('auth_cancelled');
+      
       dispatch({ type: 'SET_USER', payload: user });
       
       // Initialize webhook service for real-time group validation
@@ -209,20 +316,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
       }
     } catch (error: any) {
-      authLogger.error('Auto sign in failed', error);
+      authLogger.error('Auto sign in failed - full error details:', {
+        error: error,
+        errorName: error?.name,
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        errorStack: error?.stack
+      });
       
-      // Handle authentication cancellation - redirect to external portal
-      if (error.name === 'IdentityManagerError' || 
-          error.message?.includes('User aborted') || 
-          error.message?.includes('cancelled') ||
-          error.code === 'USER_CANCELLED') {
-        authLogger.info('🔄 User cancelled authentication - redirecting to external portal');
-        window.location.href = 'https://publicgis.petronas.com/sirius-portal/';
-        return;
-      }
-      
-      // Handle Sirius Users access denial specifically
+      // Handle Sirius Users access denial specifically (don't redirect these)
       if (error.code === 'SIRIUS_ACCESS_DENIED') {
+        authLogger.info('🚫 Access denied - showing error page');
         dispatch({ 
           type: 'SET_ACCESS_DENIED', 
           payload: {
@@ -231,11 +335,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             userGroupIds: error.userGroupIds
           }
         });
-      } else {
-        // For other errors, redirect to external portal
-        authLogger.error('🔄 Authentication error - redirecting to external portal');
-        window.location.href = 'https://publicgis.petronas.com/sirius-portal/';
+        return;
       }
+      
+      // Check if user cancelled authentication
+      if (error?.code === 'USER_CANCELLED') {
+        authLogger.info('🔄 User cancelled authentication - setting cancellation flag');
+        setCancellationFlag();
+        return;
+      }
+      
+      // For other errors, set error state and let user retry
+      authLogger.info('🔄 Authentication failed - setting error state for retry');
+      authLogger.info('🔄 Error details:', {
+        errorCode: error?.code,
+        errorName: error?.name,
+        errorMessage: error?.message
+      });
+      
+      // Set error state to allow user to retry login
+      dispatch({ 
+        type: 'SET_ERROR', 
+        payload: error?.message || 'Authentication failed' 
+      });
     }
   };
 
@@ -243,6 +365,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
       const user = await authService.signIn();
+      
+      // Clear cancellation flag on successful login
+      sessionStorage.removeItem('auth_cancelled');
+      
       dispatch({ type: 'SET_USER', payload: user });
       
       // Initialize webhook service for real-time group validation
@@ -265,6 +391,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             userGroupIds: error.userGroupIds
           }
         });
+      } else if (error.code === 'USER_CANCELLED') {
+        // User cancelled authentication - set cancellation flag
+        authLogger.info('🔄 User cancelled manual sign-in - setting cancellation flag');
+        setCancellationFlag();
       } else {
         dispatch({ type: 'SET_ERROR', payload: 'Sign in failed' });
       }

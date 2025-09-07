@@ -249,8 +249,10 @@ class AuthService {
         });
       }
       
-      // Use replace instead of reload for better UX and security
-      window.location.replace('/');
+      // Redirect to external portal after sign out
+      const externalPortalUrl = 'https://publicgis.petronas.com/sirius-portal';
+      authLogger.info('🚀 Sign out complete - redirecting to external portal:', externalPortalUrl);
+      window.location.replace(externalPortalUrl);
     } catch (error) {
       authLogger.debug('Sign out failed', error);
       throw new Error('Sign out failed');
