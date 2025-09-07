@@ -19,7 +19,7 @@ class AuthService {
       appId: process.env.REACT_APP_ARCGIS_APP_ID,
       portalUrl: process.env.REACT_APP_PORTAL_URL,
       popup: false,
-      flowType: 'authorization-code'
+      expiration: 20160
     });
 
     IdentityManager.registerOAuthInfos([this.oAuthInfo]);
@@ -52,7 +52,7 @@ class AuthService {
 
   async signIn(): Promise<User> {
     try {
-      const credential = await IdentityManager.getCredential(this.oAuthInfo.portalUrl);
+      const credential = await IdentityManager.getCredential(this.oAuthInfo.portalUrl + '/sharing/rest');
       
       const portal = new Portal({ 
         url: this.oAuthInfo.portalUrl
