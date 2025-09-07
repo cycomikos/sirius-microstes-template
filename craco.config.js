@@ -24,12 +24,12 @@ module.exports = {
     
     // Use the new 'server' option instead of deprecated 'https'
     devServerConfig.server = {
-      type: 'http', // Change to 'https' if you need SSL
+      type: 'https', // Change to 'https' if you need SSL
     };
     
     // Other dev server options
     devServerConfig.port = process.env.PORT || 3000;
-    devServerConfig.host = 'localhost'; // Use localhost instead of custom host
+    devServerConfig.host = 'template.local'; // Use template.local domain
     devServerConfig.hot = true;
     devServerConfig.liveReload = true;
     

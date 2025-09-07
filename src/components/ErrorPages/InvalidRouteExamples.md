@@ -5,38 +5,38 @@ Here are sample invalid routes that will trigger the 400 error page in your appl
 ## Invalid Routes (will show 400 Error Page)
 
 ### 1. Non-existent Pages
-- `http://localhost:3000/non-existent-page`
-- `http://localhost:3000/invalid-route`
-- `http://localhost:3000/missing-page`
-- `http://localhost:3000/unknown`
+- `https://template.local:3000/non-existent-page`
+- `https://template.local:3000/invalid-route`
+- `https://template.local:3000/missing-page`
+- `https://template.local:3000/unknown`
 
 ### 2. Malformed URLs
-- `http://localhost:3000/users/123/edit/invalid`
-- `http://localhost:3000/api/data/malformed`
-- `http://localhost:3000/settings/invalid-section`
-- `http://localhost:3000/reports/bad-format`
+- `https://template.local:3000/users/123/edit/invalid`
+- `https://template.local:3000/api/data/malformed`
+- `https://template.local:3000/settings/invalid-section`
+- `https://template.local:3000/reports/bad-format`
 
 ### 3. Invalid Query Parameters (if handling query validation)
-- `http://localhost:3000/?invalid-param=<script>alert('xss')</script>`
-- `http://localhost:3000/?malformed-json={invalid}`
-- `http://localhost:3000/?bad-encoding=%ZZ`
+- `https://template.local:3000/?invalid-param=<script>alert('xss')</script>`
+- `https://template.local:3000/?malformed-json={invalid}`
+- `https://template.local:3000/?bad-encoding=%ZZ`
 
 ### 4. Deep Invalid Paths
-- `http://localhost:3000/admin/users/invalid/action`
-- `http://localhost:3000/data/reports/2024/invalid-month`
-- `http://localhost:3000/microsite/unknown-id/dashboard`
+- `https://template.local:3000/admin/users/invalid/action`
+- `https://template.local:3000/data/reports/2024/invalid-month`
+- `https://template.local:3000/microsite/unknown-id/dashboard`
 
 ### 5. Case-sensitive Issues (if enforced)
-- `http://localhost:3000/Dashboard` (capital D)
-- `http://localhost:3000/ERROR/400` (capitals)
-- `http://localhost:3000/ADMIN/panel`
+- `https://template.local:3000/Dashboard` (capital D)
+- `https://template.local:3000/ERROR/400` (capitals)
+- `https://template.local:3000/ADMIN/panel`
 
 ## Valid Routes (work correctly)
 
 ### ✅ Working Routes
-- `http://localhost:3000/` → Dashboard
-- `http://localhost:3000/dashboard` → Redirects to `/`  
-- `http://localhost:3000/error/400` → 400 Error Page (direct access)
+- `https://template.local:3000/` → Dashboard
+- `https://template.local:3000/dashboard` → Redirects to `/`  
+- `https://template.local:3000/error/400` → 400 Error Page (direct access)
 
 ## Testing the 400 Error Page
 

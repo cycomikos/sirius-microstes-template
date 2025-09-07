@@ -18,8 +18,8 @@ This guide explains how to use the comprehensive error page system implemented i
 navigate('/error/404');
 
 // URL examples that trigger 404:
-// http://localhost:3000/unknown-page
-// http://localhost:3000/missing-resource
+// https://template.local:3000/unknown-page
+// https://template.local:3000/missing-resource
 ```
 
 ### 2. 403 - Forbidden

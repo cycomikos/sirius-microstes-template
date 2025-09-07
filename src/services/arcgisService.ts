@@ -91,6 +91,10 @@ class ArcGISService {
   }
 
   private transformArcGISData(arcgisData: ArcGISFeatureService): MicrositeData {
+    if (!arcgisData || !arcgisData.features || !Array.isArray(arcgisData.features)) {
+      throw new Error('Invalid ArcGIS data structure: missing or invalid features array');
+    }
+
     const microsites: Microsite[] = arcgisData.features.map((feature, index) => {
       const attrs = feature.attributes;
       return {
