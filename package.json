@@ -21,9 +21,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -46,9 +46,16 @@
   },
   "overrides": {
     "nth-check": ">=2.0.1",
-    "postcss": ">=8.4.31"
+    "postcss": ">=8.4.31",
+    "lit": "^3.3.1",
+    "lit-element": "^4.2.1",
+    "lit-html": "^3.3.1",
+    "@lit/reactive-element": "^2.1.1"
   },
-  "devDependencies": {
-    "@craco/craco": "^7.1.0"
+  "resolutions": {
+    "lit": "^3.3.1",
+    "lit-element": "^4.2.1", 
+    "lit-html": "^3.3.1",
+    "@lit/reactive-element": "^2.1.1"
   }
 }
