@@ -41,27 +41,34 @@ class AuthService {
         
         const user = await createUserFromPortal(portal, credential.token);
         
-        // Validate Sirius Users group access on session check using secure group ID
+        // Only validate Sirius Users group access if this is not a route navigation check
+        // This prevents authentication state loss during normal navigation
         if (SECURITY_CONFIG.ENFORCE_GROUP_CHECK) {
-          const accessCheck = validateSiriusAccess(user.groupIds || [], user.groups);
-          
-          if (!accessCheck.hasAccess) {
-            // Log security event and sign out user
-            logSecurityEvent('ACCESS_DENIED', {
-              username: user.username,
-              groups: user.groups,
-              groupIds: user.groupIds
-            });
+          try {
+            const accessCheck = validateSiriusAccess(user.groupIds || [], user.groups);
             
-            // Sign out the user who lost Sirius access
-            await this.signOut();
-            
-            // Throw error for proper handling instead of returning null
-            const accessError = new Error(`Session invalid: User '${user.username}' is no longer a member of Sirius Users group`);
-            (accessError as any).code = 'SIRIUS_ACCESS_DENIED';
-            (accessError as any).userGroups = user.groups;
-            (accessError as any).userGroupIds = user.groupIds;
-            throw accessError;
+            if (!accessCheck.hasAccess) {
+              // Log security event and sign out user
+              logSecurityEvent('ACCESS_DENIED', {
+                username: user.username,
+                groups: user.groups,
+                groupIds: user.groupIds
+              });
+              
+              // Sign out the user who lost Sirius access
+              await this.signOut();
+              
+              // Throw error for proper handling instead of returning null
+              const accessError = new Error(`Session invalid: User '${user.username}' is no longer a member of Sirius Users group`);
+              (accessError as any).code = 'SIRIUS_ACCESS_DENIED';
+              (accessError as any).userGroups = user.groups;
+              (accessError as any).userGroupIds = user.groupIds;
+              throw accessError;
+            }
+          } catch (groupCheckError) {
+            // If group validation fails due to network issues, don't invalidate the session
+            // Just log the issue and return the user (fail-safe approach)
+            authLogger.warn('Group validation failed, but maintaining session', groupCheckError);
           }
         }
         

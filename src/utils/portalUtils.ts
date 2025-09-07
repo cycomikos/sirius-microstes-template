@@ -156,85 +156,96 @@ export const fetchUserGroupsViaREST = async (portal: Portal): Promise<{ groupIds
 };
 
 export const fetchUserGroups = async (portal: Portal, username: string): Promise<{ groupIds: string[]; groupNames: string[] }> => {
-  try {
-    if (!portal.user) {
-      throw new Error('Portal user not available');
-    }
-
-    const groupIds: string[] = [];
-    const groupNames: string[] = [];
-    
-    authLogger.debug('Fetching groups for user', { username });
-    
-    // Method 1: Try to get groups directly from the portal user object (if available)
-    // Note: portal.user.groups is not a standard property in ArcGIS JS API
-    // This method is mainly for debugging and may not work
-    if ((portal.user as any).groups && (portal.user as any).groups.length > 0) {
-      authLogger.debug('Found groups in portal.user.groups', { count: (portal.user as any).groups.length });
-      (portal.user as any).groups.forEach((group: any) => {
-        groupIds.push(group.id);
-        groupNames.push(group.title);
-        authLogger.debug('Portal user group', { title: group.title, id: group.id });
-      });
-    }
-    
-    // Method 2: Query for groups the user is a member of
-    try {
-      const groupQuery = await portal.queryGroups({
-        query: `member:${username}`,
-        sortField: 'title' as const,
-        sortOrder: 'asc' as const,
-        num: 100 // Increase limit to catch more groups
-      });
-      
-      authLogger.debug('Member query found groups', { count: groupQuery.results.length });
-      
-      // Add group IDs and names (avoid duplicates)
-      groupQuery.results.forEach(group => {
-        if (!groupIds.includes(group.id)) {
-          groupIds.push(group.id);
-          groupNames.push(group.title);
-          authLogger.debug('Member of group', { title: group.title, id: group.id });
-        }
-      });
-    } catch (memberQueryError) {
-      authLogger.warn('Member query failed', memberQueryError);
-    }
-    
-    // Method 3: Query for groups the user owns
-    try {
-      const ownedGroupQuery = await portal.queryGroups({
-        query: `owner:${username}`,
-        sortField: 'title' as const,
-        sortOrder: 'asc' as const,
-        num: 100
-      });
-      
-      authLogger.debug('Owner query found groups', { count: ownedGroupQuery.results.length });
-      
-      // Add owned groups (avoid duplicates)
-      ownedGroupQuery.results.forEach(group => {
-        if (!groupIds.includes(group.id)) {
-          groupIds.push(group.id);
-          groupNames.push(group.title);
-          authLogger.debug('Owner of group', { title: group.title, id: group.id });
-        }
-      });
-    } catch (ownerQueryError) {
-      authLogger.warn('Owner query failed', ownerQueryError);
-    }
-    
-    authLogger.info('Group fetch summary', {
-      totalGroups: groupIds.length,
-      siriusGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID,
-      hasSiriusAccess: groupIds.includes(SECURITY_CONFIG.REQUIRED_GROUP_ID)
-    });
-    
-    return { groupIds, groupNames };
-  } catch (groupError) {
-    authLogger.error('Error fetching user groups', groupError);
+  if (!portal.user) {
+    authLogger.warn('Portal user not available');
     return { groupIds: [], groupNames: [] };
   }
+
+  const groupIds: string[] = [];
+  const groupNames: string[] = [];
+  
+  authLogger.debug('Fetching groups for user', { username });
+  
+  // Method 1: Try to get groups directly from the portal user object (if available)
+  // Note: portal.user.groups is not a standard property in ArcGIS JS API
+  // This method is mainly for debugging and may not work
+  if ((portal.user as any).groups && (portal.user as any).groups.length > 0) {
+    authLogger.debug('Found groups in portal.user.groups', { count: (portal.user as any).groups.length });
+    (portal.user as any).groups.forEach((group: any) => {
+      groupIds.push(group.id);
+      groupNames.push(group.title);
+      authLogger.debug('Portal user group', { title: group.title, id: group.id });
+    });
+  }
+  
+  // Method 2: Query for groups the user is a member of
+  try {
+    const groupQuery = await portal.queryGroups({
+      query: `member:${username}`,
+      sortField: 'title' as const,
+      sortOrder: 'asc' as const,
+      num: 100 // Increase limit to catch more groups
+    });
+    
+    authLogger.debug('Member query found groups', { count: groupQuery.results.length });
+    
+    // Add group IDs and names (avoid duplicates)
+    groupQuery.results.forEach(group => {
+      if (!groupIds.includes(group.id)) {
+        groupIds.push(group.id);
+        groupNames.push(group.title);
+        authLogger.debug('Member of group', { title: group.title, id: group.id });
+      }
+    });
+  } catch (memberQueryError) {
+    authLogger.warn('Member query failed', memberQueryError);
+  }
+  
+  // Method 3: Query for groups the user owns
+  try {
+    const ownedGroupQuery = await portal.queryGroups({
+      query: `owner:${username}`,
+      sortField: 'title' as const,
+      sortOrder: 'asc' as const,
+      num: 100
+    });
+    
+    authLogger.debug('Owner query found groups', { count: ownedGroupQuery.results.length });
+    
+    // Add owned groups (avoid duplicates)
+    ownedGroupQuery.results.forEach(group => {
+      if (!groupIds.includes(group.id)) {
+        groupIds.push(group.id);
+        groupNames.push(group.title);
+        authLogger.debug('Owner of group', { title: group.title, id: group.id });
+      }
+    });
+  } catch (ownerQueryError) {
+    authLogger.warn('Owner query failed', ownerQueryError);
+  }
+  
+  // Method 4: If no groups found yet, try the REST API method as fallback
+  if (groupIds.length === 0) {
+    authLogger.info('No groups found via standard queries, trying REST API fallback');
+    try {
+      const restResult = await fetchUserGroupsViaREST(portal);
+      restResult.groupIds.forEach((id, index) => {
+        groupIds.push(id);
+        groupNames.push(restResult.groupNames[index]);
+      });
+      authLogger.debug('REST API fallback found groups', { count: groupIds.length });
+    } catch (restError) {
+      authLogger.warn('REST API fallback also failed', restError);
+    }
+  }
+  
+  authLogger.info('Group fetch summary', {
+    totalGroups: groupIds.length,
+    siriusGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID,
+    hasSiriusAccess: groupIds.includes(SECURITY_CONFIG.REQUIRED_GROUP_ID)
+  });
+  
+  return { groupIds, groupNames };
 };
 
 export const createUserFromPortal = async (portal: Portal, token: string): Promise<User> => {

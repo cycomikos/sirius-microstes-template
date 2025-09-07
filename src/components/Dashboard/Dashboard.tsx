@@ -77,13 +77,8 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded,
   const breadcrumbItems = useMemo(() => [
     { 
       label: t('home'), 
-      href: '/',
-      ariaLabel: `${t('home')} - Navigate to home page`
-    },
-    { 
-      label: t('dashboard'), 
       isActive: true,
-      ariaLabel: `${t('dashboard')} - Current page`
+      ariaLabel: `${t('home')} - Current page`
     }
   ], [t]);
 

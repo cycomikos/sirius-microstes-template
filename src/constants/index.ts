@@ -16,11 +16,14 @@ export const SECURITY_CONFIG = {
   REQUIRED_GROUP_NAME: 'Sirius Users', // For display purposes only
   ALLOWED_ALTERNATIVE_GROUP_IDS: [], // Add backup group IDs if needed
   ENFORCE_GROUP_CHECK: true,
-  // Group validation intervals
-  GROUP_CHECK_INTERVAL: 5 * 60 * 1000, // Check every 5 minutes
-  GROUP_CHECK_ON_FOCUS: true, // Check when window regains focus
-  GROUP_CHECK_ON_ACTIVITY: true, // Check on user activity after idle period
-  IDLE_THRESHOLD: 10 * 60 * 1000 // Consider idle after 10 minutes
+  // Webhook-based real-time group validation (preferred)
+  USE_WEBHOOKS: true, // Enable webhook-based group validation
+  WEBHOOK_FALLBACK_INTERVAL: 30 * 60 * 1000, // Fallback polling every 30 minutes
+  // Legacy polling configuration (deprecated - use webhooks instead)
+  GROUP_CHECK_INTERVAL: 10 * 60 * 1000, // Check every 10 minutes (less frequent)
+  GROUP_CHECK_ON_FOCUS: false, // Disable focus-based checks to prevent issues during navigation
+  GROUP_CHECK_ON_ACTIVITY: false, // Disable activity-based checks to prevent issues during navigation
+  IDLE_THRESHOLD: 15 * 60 * 1000 // Consider idle after 15 minutes (longer threshold)
 } as const;
 
 export const UI_CONFIG = {

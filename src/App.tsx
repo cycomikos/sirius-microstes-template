@@ -138,6 +138,17 @@ function App() {
     setCurrentView('dashboard');
   };
 
+  // Debug logging - must be before any conditional returns
+  React.useEffect(() => {
+    console.log('🔍 App state changed:', {
+      isAuthenticated: state.isAuthenticated,
+      loading: state.loading,
+      hasUser: !!state.user,
+      error: state.error,
+      accessDenied: !!state.accessDenied
+    });
+  }, [state.isAuthenticated, state.loading, state.user, state.error, state.accessDenied]);
+
   // Show Error 403 if user is denied access due to Sirius Users group requirement
   if (state.accessDenied) {
     const isAccessRevoked = state.accessDenied.message.includes('revoked') || 
@@ -153,7 +164,12 @@ function App() {
     );
   }
 
-  if (!state.isAuthenticated) {
+  // Check if we have a valid session before showing login
+  // This prevents showing login page during temporary authentication state loss
+  const shouldShowLogin = !state.isAuthenticated && !state.loading;
+  
+  if (shouldShowLogin) {
+    console.log('🚪 Showing login page - not authenticated and not loading');
     return <Login onLogin={() => {}} />;
   }
 

@@ -3,6 +3,7 @@ import { AuthState, User } from '../types/auth';
 import { authService } from '../services/authService';
 import { SecurityConfig, SessionManager } from '../utils/security';
 import { groupValidationService } from '../services/groupValidationService';
+import { webhookService } from '../services/webhookService';
 import { authLogger, securityLogger } from '../utils/logger';
 
 interface AuthContextType {
@@ -53,13 +54,36 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   }
 };
 
-const initialState: AuthState = {
-  isAuthenticated: false,
-  user: null,
-  loading: false,
-  error: null,
-  accessDenied: null
+// Try to restore authentication state from sessionStorage on app start
+const getInitialState = (): AuthState => {
+  try {
+    const savedState = sessionStorage.getItem('authState');
+    if (savedState) {
+      const parsed = JSON.parse(savedState);
+      // Only restore if we have a user and were previously authenticated
+      if (parsed.isAuthenticated && parsed.user) {
+        return {
+          ...parsed,
+          loading: false, // Always start without loading
+          error: null     // Clear any previous errors
+        };
+      }
+    }
+  } catch (error) {
+    // If there's any error parsing, fall back to default state
+    authLogger.debug('Could not restore auth state from storage', error);
+  }
+  
+  return {
+    isAuthenticated: false,
+    user: null,
+    loading: false,
+    error: null,
+    accessDenied: null
+  };
 };
+
+const initialState: AuthState = getInitialState();
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -68,10 +92,39 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  // Persist authentication state to sessionStorage whenever it changes
+  React.useEffect(() => {
+    try {
+      if (state.isAuthenticated && state.user) {
+        sessionStorage.setItem('authState', JSON.stringify({
+          isAuthenticated: state.isAuthenticated,
+          user: state.user,
+          loading: false,
+          error: null,
+          accessDenied: null
+        }));
+      } else if (!state.loading) {
+        // Clear stored state if not authenticated and not loading
+        sessionStorage.removeItem('authState');
+      }
+    } catch (error) {
+      authLogger.debug('Could not persist auth state to storage', error);
+    }
+  }, [state.isAuthenticated, state.user, state.loading]);
+
+  // Use a ref to store the latest callback to avoid stale closures
+  const handleGroupAccessLostRef = React.useRef<() => void>();
+  
   const handleGroupAccessLost = React.useCallback(() => {
+    // Only trigger group access lost if user is actually authenticated
+    // This prevents false positives during navigation
+    if (!state.isAuthenticated || !state.user) {
+      return;
+    }
+    
     securityLogger.security('User lost Sirius Users group membership', {
-      userGroups: state.user?.groups,
-      userGroupIds: state.user?.groupIds
+      userGroups: state.user.groups,
+      userGroupIds: state.user.groupIds
     });
     
     // Set access denied state
@@ -79,15 +132,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       type: 'SET_ACCESS_DENIED', 
       payload: {
         message: 'Your access to SIRIUS Portal has been revoked. You are no longer a member of the Sirius Users group.',
-        userGroups: state.user?.groups,
-        userGroupIds: state.user?.groupIds
+        userGroups: state.user.groups,
+        userGroupIds: state.user.groupIds
       }
     });
     
     // Clean up sessions
     SessionManager.cleanup();
     groupValidationService.cleanup();
-  }, [state.user?.groups, state.user?.groupIds]);
+  }, [state.isAuthenticated, state.user]);
+
+  // Update the ref whenever the callback changes
+  handleGroupAccessLostRef.current = handleGroupAccessLost;
 
   useEffect(() => {
     // Initialize security and session management
@@ -103,31 +159,64 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       signOut();
     });
 
-    // Initialize group validation service
-    groupValidationService.initialize(() => {
-      authLogger.info('Group access lost - user removed from Sirius Users group');
-      handleGroupAccessLost();
-    });
+    // Initialize group validation service - choose between webhook or polling
+    if (SECURITY_CONFIG.USE_WEBHOOKS) {
+      // Use webhook-based real-time group validation (preferred)
+      authLogger.info('🚀 Initializing webhook-based group validation');
+      // Note: webhookService will be initialized when user successfully logs in
+    } else {
+      // Fallback to polling-based group validation
+      authLogger.info('🔄 Initializing polling-based group validation (fallback)');
+      groupValidationService.initialize(() => {
+        authLogger.info('Group access lost - user removed from Sirius Users group');
+        // Use the ref to always call the latest version of the callback
+        handleGroupAccessLostRef.current?.();
+      });
+    }
 
-    checkSession();
+    // Temporarily disable automatic session check to prevent auth state loss
+    // Only call checkSession if we don't have a restored authentication state
+    if (!initialState.isAuthenticated) {
+      checkSession();
+    }
 
     // Cleanup on unmount
     return () => {
       SessionManager.cleanup();
-      groupValidationService.cleanup();
+      if (SECURITY_CONFIG.USE_WEBHOOKS) {
+        webhookService.cleanup();
+      } else {
+        groupValidationService.cleanup();
+      }
     };
-  }, [handleGroupAccessLost]); // Include handleGroupAccessLost in dependencies
+  }, []); // Empty dependency array - initialize only once
 
   const checkSession = async () => {
+    authLogger.info('🔄 Starting session check');
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
       const user = await authService.checkSession();
-      dispatch({ type: 'SET_USER', payload: user });
+      if (user) {
+        authLogger.info('✅ Session check successful - user authenticated', { username: user.username });
+        dispatch({ type: 'SET_USER', payload: user });
+        
+        // Initialize webhook service for existing session
+        if (SECURITY_CONFIG.USE_WEBHOOKS) {
+          webhookService.initialize(user.username, () => {
+            authLogger.info('🔗 Webhook detected group access lost');
+            handleGroupAccessLostRef.current?.();
+          });
+        }
+      } else {
+        authLogger.warn('❌ Session check returned null - no valid session');
+        dispatch({ type: 'SET_USER', payload: null });
+      }
     } catch (error: any) {
-      authLogger.error('Session check failed', error);
+      authLogger.error('💥 Session check failed', error);
       
       // Handle Sirius Users access denial specifically
       if (error.code === 'SIRIUS_ACCESS_DENIED') {
+        authLogger.error('🚫 Access denied - Sirius group issue', { error: error.message });
         dispatch({ 
           type: 'SET_ACCESS_DENIED', 
           payload: {
@@ -137,7 +226,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         });
       } else {
-        dispatch({ type: 'SET_ERROR', payload: 'Session check failed' });
+        // Only clear authentication state if there was a legitimate authentication failure
+        // Don't clear state for network errors or temporary issues during navigation
+        const isNavigationError = error.message?.includes('navigation') || 
+                                 error.message?.includes('route') ||
+                                 error.name === 'NetworkError';
+        
+        if (!isNavigationError) {
+          authLogger.error('🔓 Clearing authentication state due to session failure');
+          dispatch({ type: 'SET_ERROR', payload: 'Session check failed' });
+        } else {
+          authLogger.info('🛡️ Preserving auth state - navigation error detected');
+          // Keep current state but clear loading
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
       }
     }
   };
@@ -147,6 +249,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const user = await authService.signIn();
       dispatch({ type: 'SET_USER', payload: user });
+      
+      // Initialize webhook service for real-time group validation
+      if (SECURITY_CONFIG.USE_WEBHOOKS && user) {
+        webhookService.initialize(user.username, () => {
+          authLogger.info('🔗 Webhook detected group access lost');
+          handleGroupAccessLostRef.current?.();
+        });
+      }
     } catch (error: any) {
       authLogger.error('Sign in failed', error);
       
@@ -171,6 +281,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       // Clean up session manager
       SessionManager.cleanup();
+      
+      // Clear persisted authentication state
+      sessionStorage.removeItem('authState');
       
       // Sign out from authentication service
       await authService.signOut();
