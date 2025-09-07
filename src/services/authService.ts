@@ -4,6 +4,7 @@ import Portal from '@arcgis/core/portal/Portal';
 import { User } from '../types/auth';
 import { createUserFromPortal, fetchUserGroups, validateSiriusAccess, logSecurityEvent } from '../utils/portalUtils';
 import { SECURITY_CONFIG } from '../constants';
+import { authLogger, securityLogger } from '../utils/logger';
 
 class AuthService {
   private oAuthInfo: OAuthInfo;
@@ -63,10 +64,7 @@ class AuthService {
       
       return null;
     } catch (error) {
-      // Don't log sensitive error details in production
-      if (process.env.NODE_ENV === 'development') {
-        console.log('No active session found:', error);
-      }
+      authLogger.debug('No active session found', error);
       return null;
     }
   }
@@ -84,18 +82,22 @@ class AuthService {
       
       // Validate Sirius Users group access using secure group ID
       if (SECURITY_CONFIG.ENFORCE_GROUP_CHECK) {
-        console.log('🔒 Starting Sirius access validation for user:', user.username);
-        console.log('User group IDs:', user.groupIds);
-        console.log('User group names:', user.groups);
-        console.log('Required Sirius group ID:', SECURITY_CONFIG.REQUIRED_GROUP_ID);
+        authLogger.debug('Starting Sirius access validation', {
+          username: user.username,
+          groupIds: user.groupIds,
+          groups: user.groups,
+          requiredGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID
+        });
         
         const accessCheck = validateSiriusAccess(user.groupIds || [], user.groups);
         
         if (!accessCheck.hasAccess) {
-          console.error('❌ SIRIUS ACCESS DENIED for user:', user.username);
-          console.error('User groups found:', user.groups);
-          console.error('User group IDs found:', user.groupIds);
-          console.error('Required group ID:', SECURITY_CONFIG.REQUIRED_GROUP_ID);
+          securityLogger.security('SIRIUS ACCESS DENIED', {
+            username: user.username,
+            groups: user.groups,
+            groupIds: user.groupIds,
+            requiredGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID
+          });
           
           // Log security event for access denial
           logSecurityEvent('ACCESS_DENIED', {
@@ -113,8 +115,11 @@ class AuthService {
           throw accessError;
         }
         
-        console.log('✅ SIRIUS ACCESS GRANTED for user:', user.username);
-        console.log('Matched group:', accessCheck.matchedGroupName, `(${accessCheck.matchedGroupId})`);
+        authLogger.info('SIRIUS ACCESS GRANTED', {
+          username: user.username,
+          matchedGroup: accessCheck.matchedGroupName,
+          matchedGroupId: accessCheck.matchedGroupId
+        });
         
         // Log successful access
         logSecurityEvent('ACCESS_GRANTED', {
@@ -128,10 +133,7 @@ class AuthService {
       
       return user;
     } catch (error) {
-      // Don't expose sensitive error details to users
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Sign in failed:', error);
-      }
+      authLogger.debug('Sign in failed', error);
       
       // Re-throw specific access denied errors
       if (error instanceof Error && error.message.includes('Access denied')) {
@@ -166,9 +168,7 @@ class AuthService {
       // Use replace instead of reload for better UX and security
       window.location.replace('/');
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Sign out failed:', error);
-      }
+      authLogger.debug('Sign out failed', error);
       throw new Error('Sign out failed');
     }
   }
@@ -211,9 +211,7 @@ class AuthService {
       
       return true;
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Server-side validation failed:', error);
-      }
+      authLogger.debug('Server-side validation failed', error);
       // Fail secure - deny access on error
       return false;
     }

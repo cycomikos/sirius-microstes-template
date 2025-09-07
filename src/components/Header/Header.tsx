@@ -36,7 +36,6 @@ interface HeaderProps {
   onSyncMicrosites?: () => void;
   isLoadingMicrosites?: boolean;
   onNavigateHome?: () => void;
-  onValidateGroups?: () => Promise<boolean>;
 }
 
 // Helper function to get translated text
@@ -53,8 +52,7 @@ const Header: React.FC<HeaderProps> = ({
   userMicrosites = [],
   onSyncMicrosites,
   isLoadingMicrosites = false,
-  onNavigateHome,
-  onValidateGroups
+  onNavigateHome
 }) => {
   const navigate = useNavigate();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -120,13 +118,6 @@ const Header: React.FC<HeaderProps> = ({
     onSyncMicrosites?.();
   };
 
-  const handleValidateGroups = async () => {
-    if (onValidateGroups) {
-      console.log('🔄 Manually validating user groups...');
-      const isValid = await onValidateGroups();
-      console.log(isValid ? '✅ Group validation passed' : '❌ Group validation failed');
-    }
-  };
 
   const handleLogoClick = () => {
     navigate('/');
@@ -380,24 +371,6 @@ const Header: React.FC<HeaderProps> = ({
               {t('language', currentLanguage)} ({currentLanguage.toUpperCase()})
             </div>
             
-            {/* Group validation option for debugging/manual refresh */}
-            {process.env.NODE_ENV === 'development' && onValidateGroups && (
-              <div 
-                className="dropdown-item" 
-                onClick={handleValidateGroups}
-                role="menuitem"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleValidateGroups();
-                  }
-                }}
-              >
-                <span>🔄</span>
-                Validate Access
-              </div>
-            )}
             
             <div 
               className="dropdown-item" 

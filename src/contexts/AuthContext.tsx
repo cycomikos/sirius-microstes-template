@@ -3,13 +3,13 @@ import { AuthState, User } from '../types/auth';
 import { authService } from '../services/authService';
 import { SecurityConfig, SessionManager } from '../utils/security';
 import { groupValidationService } from '../services/groupValidationService';
+import { authLogger, securityLogger } from '../utils/logger';
 
 interface AuthContextType {
   state: AuthState;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   bypassAuth: () => void;
-  validateGroupsNow: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -69,7 +69,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   const handleGroupAccessLost = React.useCallback(() => {
-    console.error('🚨 SECURITY ALERT: User lost Sirius Users group membership');
+    securityLogger.security('User lost Sirius Users group membership', {
+      userGroups: state.user?.groups,
+      userGroupIds: state.user?.groupIds
+    });
     
     // Set access denied state
     dispatch({ 
@@ -90,19 +93,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Initialize security and session management
     const securityCheck = SecurityConfig.validateSecureContext();
     if (!securityCheck.isSecure) {
-      console.warn('Security warnings:', securityCheck.warnings);
+      authLogger.warn('Security configuration issues', { warnings: securityCheck.warnings });
       dispatch({ type: 'SET_ERROR', payload: 'Security configuration issues detected' });
     }
 
     // Initialize session manager
     SessionManager.initialize(() => {
-      console.log('Session expired due to inactivity');
+      authLogger.info('Session expired due to inactivity');
       signOut();
     });
 
     // Initialize group validation service
     groupValidationService.initialize(() => {
-      console.log('🚨 Group access lost - user removed from Sirius Users group');
+      authLogger.info('Group access lost - user removed from Sirius Users group');
       handleGroupAccessLost();
     });
 
@@ -121,7 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const user = await authService.checkSession();
       dispatch({ type: 'SET_USER', payload: user });
     } catch (error: any) {
-      console.error('Session check failed:', error);
+      authLogger.error('Session check failed', error);
       
       // Handle Sirius Users access denial specifically
       if (error.code === 'SIRIUS_ACCESS_DENIED') {
@@ -145,7 +148,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const user = await authService.signIn();
       dispatch({ type: 'SET_USER', payload: user });
     } catch (error: any) {
-      console.error('Sign in failed:', error);
+      authLogger.error('Sign in failed', error);
       
       // Handle Sirius Users access denial specifically
       if (error.code === 'SIRIUS_ACCESS_DENIED') {
@@ -181,7 +184,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const bypassAuth = () => {
     if (process.env.NODE_ENV !== 'development') {
-      console.warn('Authentication bypass is only available in development mode');
+      authLogger.warn('Authentication bypass only available in development mode');
       return;
     }
 
@@ -199,12 +202,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // handleGroupAccessLost is now defined above useEffect as a useCallback
 
-  const validateGroupsNow = async (): Promise<boolean> => {
-    return await groupValidationService.validateNow();
-  };
 
   return (
-    <AuthContext.Provider value={{ state, signIn, signOut, bypassAuth, validateGroupsNow }}>
+    <AuthContext.Provider value={{ state, signIn, signOut, bypassAuth }}>
       {children}
     </AuthContext.Provider>
   );

@@ -156,6 +156,19 @@ export const MICROSITES: Microsite[] = [
     icon: '🤖',
     gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
     country: 'MY'
+  },
+  {
+    id: '13',
+    title: 'Smart Asset Intelligence Hub',
+    description: {
+      en: 'AI-powered asset management and predictive maintenance system using IoT sensors and machine learning for optimal equipment performance.',
+      bm: 'Sistem pengurusan aset berkuasa AI dan penyelenggaraan ramalan menggunakan sensor IoT dan pembelajaran mesin untuk prestasi peralatan optimum.'
+    },
+    status: 'online',
+    hasAccess: false,
+    icon: '🤖',
+    gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+    country: 'BR'
   }
 ];
 

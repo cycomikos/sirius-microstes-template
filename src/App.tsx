@@ -21,7 +21,7 @@ import './App.css';
 
 function App() {
   const [currentView, setCurrentView] = React.useState('dashboard');
-  const { state, signOut, validateGroupsNow } = useAuth();
+  const { state, signOut } = useAuth();
   const { isDarkTheme, toggleTheme } = useTheme();
   const { currentLanguage, toggleLanguage } = useLanguage();
   const {
@@ -178,7 +178,6 @@ function App() {
         user={state.user}
         userMicrosites={sampleMicrosites}
         onNavigateHome={handleNavigateHome}
-        onValidateGroups={validateGroupsNow}
       />
 
       {/* Main Layout */}

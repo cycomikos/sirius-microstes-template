@@ -1,16 +1,48 @@
 import { SECURITY_CONFIG } from '../constants';
 import { validateSiriusAccess, logSecurityEvent, fetchUserGroups } from '../utils/portalUtils';
+import { groupValidationLogger, securityLogger } from '../utils/logger';
 import Portal from '@arcgis/core/portal/Portal';
 import IdentityManager from '@arcgis/core/identity/IdentityManager';
 
+type ValidationTrigger = 'PERIODIC_CHECK' | 'FOCUS_CHECK' | 'VISIBILITY_CHECK' | 'ACTIVITY_CHECK' | 'MANUAL_CHECK';
+
+interface ValidationState {
+  isRunning: boolean;
+  isValidating: boolean;
+  lastValidation: number;
+  lastActivity: number;
+  focusCheckEnabled: boolean;
+}
+
+interface ValidationStatus extends ValidationState {
+  nextCheckIn: number;
+  isHealthy: boolean;
+}
+
+/**
+ * Service responsible for periodically validating user group membership
+ * to detect when administrators remove users from required groups
+ */
 export class GroupValidationService {
   private static instance: GroupValidationService;
+  
+  // Core state management
+  private state: ValidationState = {
+    isRunning: false,
+    isValidating: false,
+    lastValidation: 0,
+    lastActivity: Date.now(),
+    focusCheckEnabled: true
+  };
+  
+  // Timer and callback management
   private validationTimer: NodeJS.Timeout | null = null;
   private onGroupValidationFailed: (() => void) | null = null;
-  private lastActivity: number = Date.now();
-  private isValidating: boolean = false;
-  private focusCheckEnabled: boolean = true;
+  
+  // Event listeners cleanup references
+  private eventCleanupFunctions: (() => void)[] = [];
 
+  // Singleton pattern
   static getInstance(): GroupValidationService {
     if (!GroupValidationService.instance) {
       GroupValidationService.instance = new GroupValidationService();
@@ -18,203 +50,339 @@ export class GroupValidationService {
     return GroupValidationService.instance;
   }
 
+  private constructor() {
+    // Private constructor for singleton pattern
+  }
+
+  /**
+   * Initialize the group validation service
+   * @param onGroupValidationFailed Callback when user loses group access
+   */
   initialize(onGroupValidationFailed: () => void): void {
-    this.onGroupValidationFailed = onGroupValidationFailed;
-    this.startPeriodicValidation();
-    this.setupEventListeners();
-    
-    console.log('🔄 Group validation service initialized');
-    console.log(`📅 Checking every ${SECURITY_CONFIG.GROUP_CHECK_INTERVAL / 60000} minutes`);
-  }
-
-  private startPeriodicValidation(): void {
-    if (this.validationTimer) {
-      clearInterval(this.validationTimer);
-    }
-
-    this.validationTimer = setInterval(() => {
-      this.validateCurrentUserGroups('PERIODIC_CHECK');
-    }, SECURITY_CONFIG.GROUP_CHECK_INTERVAL);
-  }
-
-  private setupEventListeners(): void {
-    // Check on window focus (user returns to app)
-    if (SECURITY_CONFIG.GROUP_CHECK_ON_FOCUS) {
-      window.addEventListener('focus', this.handleWindowFocus.bind(this));
-      document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
-    }
-
-    // Track user activity
-    if (SECURITY_CONFIG.GROUP_CHECK_ON_ACTIVITY) {
-      ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'].forEach(event => {
-        document.addEventListener(event, this.updateActivity.bind(this), { passive: true });
-      });
-    }
-  }
-
-  private handleWindowFocus(): void {
-    if (!this.focusCheckEnabled) return;
-    
-    console.log('👀 Window gained focus - checking group membership');
-    this.validateCurrentUserGroups('FOCUS_CHECK');
-  }
-
-  private handleVisibilityChange(): void {
-    if (!document.hidden && this.focusCheckEnabled) {
-      console.log('👁️ Tab became visible - checking group membership');
-      this.validateCurrentUserGroups('VISIBILITY_CHECK');
-    }
-  }
-
-  private updateActivity(): void {
-    const now = Date.now();
-    const timeSinceLastActivity = now - this.lastActivity;
-    
-    // If user was idle and now active, check groups
-    if (timeSinceLastActivity > SECURITY_CONFIG.IDLE_THRESHOLD) {
-      console.log('⚡ User active after idle period - checking group membership');
-      this.validateCurrentUserGroups('ACTIVITY_CHECK');
-    }
-    
-    this.lastActivity = now;
-  }
-
-  private async validateCurrentUserGroups(trigger: string): Promise<void> {
-    if (this.isValidating) {
-      console.log('⏳ Group validation already in progress, skipping...');
+    // Prevent double initialization
+    if (this.state.isRunning) {
+      groupValidationLogger.warn('Group validation service already initialized');
       return;
     }
 
-    try {
-      this.isValidating = true;
-      console.log(`🔍 Validating group membership (trigger: ${trigger})`);
-
-      // Get current portal instance with authentication
-      const portalUrl = process.env.REACT_APP_PORTAL_URL;
-      if (!portalUrl) {
-        console.warn('⚠️ No portal URL configured');
-        return;
-      }
-
-      // Check if user is still authenticated
-      try {
-        await IdentityManager.checkSignInStatus(portalUrl);
-      } catch (error) {
-        console.warn('⚠️ User not authenticated, cannot validate groups');
-        return;
-      }
-
-      const portal = new Portal({ url: portalUrl });
-      await portal.load();
-
-      if (!portal.user) {
-        console.warn('⚠️ No portal user available for group validation');
-        return;
-      }
-
-      // Fetch fresh group membership from server
-      const { groupIds, groupNames } = await fetchUserGroups(portal, portal.user.username);
-      
-      console.log('📋 Current groups from server:', groupNames);
-      console.log('🔑 Current group IDs:', groupIds);
-
-      // Validate Sirius Users access
-      const accessCheck = validateSiriusAccess(groupIds, groupNames);
-
-      if (!accessCheck.hasAccess) {
-        console.error('🚨 USER LOST SIRIUS GROUP ACCESS!');
-        console.error('User:', portal.user.username);
-        console.error('Required group ID:', SECURITY_CONFIG.REQUIRED_GROUP_ID);
-        console.error('Current groups:', groupNames);
-
-        // Log security event
-        logSecurityEvent('ACCESS_DENIED', {
-          username: portal.user.username,
-          groups: groupNames,
-          groupIds: groupIds
-        });
-
-        // Notify the application that group access was lost
-        if (this.onGroupValidationFailed) {
-          this.onGroupValidationFailed();
-        }
-      } else {
-        console.log(`✅ Group validation passed (${trigger})`);
-        console.log(`🎯 Matched group: ${accessCheck.matchedGroupName} (${accessCheck.matchedGroupId})`);
-      }
-
-    } catch (error) {
-      console.error('❌ Group validation failed:', error);
-      
-      // On validation error, we could either:
-      // 1. Fail secure (sign out user) - more secure
-      // 2. Allow to continue - better UX
-      // For now, we'll log the error and continue, but this could be configurable
-      console.warn('⚠️ Continuing despite validation error - consider failing secure in production');
-      
-    } finally {
-      this.isValidating = false;
-    }
+    this.onGroupValidationFailed = onGroupValidationFailed;
+    this.state.isRunning = true;
+    
+    this.startPeriodicValidation();
+    this.setupEventListeners();
+    
+    this.logInitialization();
   }
 
-  // Manual validation trigger (can be called by components)
+  /**
+   * Stop the service and clean up all resources
+   */
+  stop(): void {
+    if (!this.state.isRunning) {
+      return;
+    }
+
+    groupValidationLogger.info('Stopping group validation service');
+    
+    this.state.isRunning = false;
+    this.stopPeriodicValidation();
+    this.removeEventListeners();
+    
+    // Reset validation state
+    this.state.isValidating = false;
+    this.state.focusCheckEnabled = true;
+  }
+
+  /**
+   * Complete cleanup of the service
+   */
+  cleanup(): void {
+    groupValidationLogger.info('Cleaning up group validation service');
+    
+    this.stop();
+    this.onGroupValidationFailed = null;
+    
+    // Reset all state to initial values
+    this.state = {
+      isRunning: false,
+      isValidating: false,
+      lastValidation: 0,
+      lastActivity: Date.now(),
+      focusCheckEnabled: true
+    };
+  }
+
+  /**
+   * Manually trigger group validation
+   */
   async validateNow(): Promise<boolean> {
     try {
       await this.validateCurrentUserGroups('MANUAL_CHECK');
       return true;
     } catch (error) {
-      console.error('Manual group validation failed:', error);
+      groupValidationLogger.error('Manual group validation failed', error);
       return false;
     }
   }
 
-  // Temporarily disable focus checks (useful during certain operations)
+  /**
+   * Get current service status
+   */
+  getStatus(): ValidationStatus {
+    const now = Date.now();
+    const timeSinceLastValidation = now - this.state.lastValidation;
+    const nextCheckIn = this.state.isRunning 
+      ? Math.max(0, SECURITY_CONFIG.GROUP_CHECK_INTERVAL - timeSinceLastValidation)
+      : 0;
+    
+    return {
+      ...this.state,
+      nextCheckIn,
+      isHealthy: this.isHealthy()
+    };
+  }
+
+  /**
+   * Check if service is running properly
+   */
+  isHealthy(): boolean {
+    return this.state.isRunning && !this.state.isValidating && !!this.validationTimer;
+  }
+
+  /**
+   * Control focus-based validation
+   */
   disableFocusChecks(): void {
-    this.focusCheckEnabled = false;
-    console.log('🔇 Focus-based group checks disabled');
+    this.state.focusCheckEnabled = false;
+    groupValidationLogger.info('Focus-based group checks disabled');
   }
 
   enableFocusChecks(): void {
-    this.focusCheckEnabled = true;
-    console.log('🔊 Focus-based group checks enabled');
+    this.state.focusCheckEnabled = true;
+    groupValidationLogger.info('Focus-based group checks enabled');
   }
 
-  cleanup(): void {
-    console.log('🧹 Cleaning up group validation service');
-    
+  // Private methods
+
+  private logInitialization(): void {
+    groupValidationLogger.info(`Group validation service initialized - Checks every ${SECURITY_CONFIG.GROUP_CHECK_INTERVAL / 60000}min, Focus:${SECURITY_CONFIG.GROUP_CHECK_ON_FOCUS}, Activity:${SECURITY_CONFIG.GROUP_CHECK_ON_ACTIVITY}`);
+  }
+
+  private startPeriodicValidation(): void {
+    // Clear any existing timer first
+    this.stopPeriodicValidation();
+
+    groupValidationLogger.debug('Starting periodic validation timer');
+    this.validationTimer = setInterval(() => {
+      if (this.state.isRunning) {
+        this.validateCurrentUserGroups('PERIODIC_CHECK');
+      }
+    }, SECURITY_CONFIG.GROUP_CHECK_INTERVAL);
+  }
+
+  private stopPeriodicValidation(): void {
     if (this.validationTimer) {
+      groupValidationLogger.debug('Stopping periodic validation timer');
       clearInterval(this.validationTimer);
       this.validationTimer = null;
     }
-
-    // Remove event listeners
-    window.removeEventListener('focus', this.handleWindowFocus.bind(this));
-    document.removeEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
-
-    ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'].forEach(event => {
-      document.removeEventListener(event, this.updateActivity.bind(this));
-    });
-
-    this.onGroupValidationFailed = null;
-    this.focusCheckEnabled = false;
   }
 
-  // Get validation status
-  getStatus(): {
-    isRunning: boolean;
-    lastActivity: number;
-    isValidating: boolean;
-    nextCheckIn: number;
-  } {
-    const nextCheck = this.validationTimer ? SECURITY_CONFIG.GROUP_CHECK_INTERVAL : 0;
+  private setupEventListeners(): void {
+    // Clear any existing listeners first
+    this.removeEventListeners();
+
+    // Setup focus-based validation
+    if (SECURITY_CONFIG.GROUP_CHECK_ON_FOCUS) {
+      this.setupFocusListeners();
+    }
+
+    // Setup activity-based validation
+    if (SECURITY_CONFIG.GROUP_CHECK_ON_ACTIVITY) {
+      this.setupActivityListeners();
+    }
+
+    groupValidationLogger.debug('Event listeners configured');
+  }
+
+  private setupFocusListeners(): void {
+    const handleFocus = () => this.handleWindowFocus();
+    const handleVisibility = () => this.handleVisibilityChange();
     
-    return {
-      isRunning: !!this.validationTimer,
-      lastActivity: this.lastActivity,
-      isValidating: this.isValidating,
-      nextCheckIn: nextCheck
-    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    
+    // Store cleanup functions
+    this.eventCleanupFunctions.push(
+      () => window.removeEventListener('focus', handleFocus),
+      () => document.removeEventListener('visibilitychange', handleVisibility)
+    );
+  }
+
+  private setupActivityListeners(): void {
+    const handleActivity = () => this.updateActivity();
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    activityEvents.forEach(event => {
+      document.addEventListener(event, handleActivity, { passive: true });
+      this.eventCleanupFunctions.push(
+        () => document.removeEventListener(event, handleActivity)
+      );
+    });
+  }
+
+  private removeEventListeners(): void {
+    // Clean up all event listeners
+    this.eventCleanupFunctions.forEach(cleanup => cleanup());
+    this.eventCleanupFunctions = [];
+  }
+
+  private handleWindowFocus(): void {
+    if (!this.shouldValidateOnEvent()) {
+      return;
+    }
+    
+    groupValidationLogger.debug('Window focus - checking groups');
+    this.validateCurrentUserGroups('FOCUS_CHECK');
+  }
+
+  private handleVisibilityChange(): void {
+    if (document.hidden || !this.shouldValidateOnEvent()) {
+      return;
+    }
+    
+    groupValidationLogger.debug('Tab visible - checking groups');
+    this.validateCurrentUserGroups('VISIBILITY_CHECK');
+  }
+
+  private updateActivity(): void {
+    if (!this.state.isRunning) return;
+    
+    const now = Date.now();
+    const timeSinceLastActivity = now - this.state.lastActivity;
+    
+    // Check if user was idle and is now active
+    if (timeSinceLastActivity > SECURITY_CONFIG.IDLE_THRESHOLD) {
+      if (this.shouldValidateOnActivity()) {
+        groupValidationLogger.debug('User active after idle - checking groups');
+        this.validateCurrentUserGroups('ACTIVITY_CHECK');
+      }
+    }
+    
+    this.state.lastActivity = now;
+  }
+
+  private shouldValidateOnEvent(): boolean {
+    if (!this.state.focusCheckEnabled || !this.state.isRunning) {
+      return false;
+    }
+    
+    const timeSinceLastValidation = Date.now() - this.state.lastValidation;
+    const minInterval = 30000; // Don't validate more than once every 30 seconds
+    
+    return timeSinceLastValidation > minInterval;
+  }
+
+  private shouldValidateOnActivity(): boolean {
+    if (!this.state.isRunning) return false;
+    
+    const timeSinceLastValidation = Date.now() - this.state.lastValidation;
+    const minInterval = 60000; // Don't validate more than once every minute for activity
+    
+    return timeSinceLastValidation > minInterval;
+  }
+
+  private async validateCurrentUserGroups(trigger: ValidationTrigger): Promise<void> {
+    // Prevent concurrent validations
+    if (this.state.isValidating) {
+      groupValidationLogger.debug('Group validation in progress, skipping');
+      return;
+    }
+
+    // Check if service is still running (except for manual checks)
+    if (!this.state.isRunning && trigger !== 'MANUAL_CHECK') {
+      groupValidationLogger.debug('Service stopped, skipping validation');
+      return;
+    }
+
+    try {
+      this.state.isValidating = true;
+      this.state.lastValidation = Date.now();
+      
+      groupValidationLogger.info(`Validating group membership (${trigger})`);
+
+      const portal = await this.createAuthenticatedPortal();
+      if (!portal?.user) {
+        groupValidationLogger.warn('No portal user available for validation');
+        return;
+      }
+
+      const { groupIds, groupNames } = await fetchUserGroups(portal, portal.user.username);
+      
+      groupValidationLogger.debug('Groups validated', { groupNames, groupIds });
+
+      const accessCheck = validateSiriusAccess(groupIds, groupNames);
+
+      if (!accessCheck.hasAccess) {
+        await this.handleAccessLost(portal.user.username, groupNames, groupIds);
+      } else {
+        groupValidationLogger.info(`Group validation passed (${trigger}) - ${accessCheck.matchedGroupName}`);
+      }
+
+    } catch (error) {
+      groupValidationLogger.error('Group validation failed', error);
+      groupValidationLogger.warn('Continuing despite validation error');
+      
+    } finally {
+      this.state.isValidating = false;
+    }
+  }
+
+  private async createAuthenticatedPortal(): Promise<Portal | null> {
+    const portalUrl = process.env.REACT_APP_PORTAL_URL;
+    if (!portalUrl) {
+      groupValidationLogger.warn('No portal URL configured');
+      return null;
+    }
+
+    // Check if user is still authenticated
+    try {
+      await IdentityManager.checkSignInStatus(portalUrl);
+    } catch (error) {
+      groupValidationLogger.warn('User not authenticated, cannot validate groups');
+      return null;
+    }
+
+    const portal = new Portal({ url: portalUrl });
+    await portal.load();
+    return portal;
+  }
+
+  private async handleAccessLost(username: string, groupNames: string[], groupIds: string[]): Promise<void> {
+    securityLogger.security('USER LOST SIRIUS GROUP ACCESS', {
+      username,
+      requiredGroupId: SECURITY_CONFIG.REQUIRED_GROUP_ID,
+      currentGroups: groupNames
+    });
+
+    // Log security event
+    logSecurityEvent('ACCESS_DENIED', {
+      username,
+      groups: groupNames,
+      groupIds
+    });
+
+    // Stop the service and notify the application
+    this.stop();
+    
+    if (this.onGroupValidationFailed) {
+      this.onGroupValidationFailed();
+    }
   }
 }
 
+// Export singleton instance
 export const groupValidationService = GroupValidationService.getInstance();
+
+// Export types for external use
+export type { ValidationTrigger, ValidationState, ValidationStatus };
