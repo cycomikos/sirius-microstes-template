@@ -50,7 +50,6 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const navigate = useNavigate();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [appLauncherOpen, setAppLauncherOpen] = useState(false);
 
   // Get user display info
   const userFullName = user?.fullName || t('developmentUser', currentLanguage);
@@ -66,13 +65,6 @@ const Header: React.FC<HeaderProps> = ({
   const handleUserMenuClick = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation();
     setUserDropdownOpen(!userDropdownOpen);
-    setAppLauncherOpen(false);
-  };
-
-  const handleAppLauncherClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAppLauncherOpen(!appLauncherOpen);
-    setUserDropdownOpen(false);
   };
 
   const handleThemeToggle = () => {
@@ -95,22 +87,6 @@ const Header: React.FC<HeaderProps> = ({
     setUserDropdownOpen(false);
   };
 
-  const handleMicrositeClick = (microsite: UserMicrosite) => {
-    if (microsite.url) {
-      if (microsite.url.startsWith('http')) {
-        // External URL
-        window.open(microsite.url, '_blank', 'noopener,noreferrer');
-      } else {
-        // Internal route
-        window.location.href = microsite.url;
-      }
-    }
-    setAppLauncherOpen(false);
-  };
-
-  const handleSyncMicrosites = () => {
-    onSyncMicrosites?.();
-  };
 
 
   const handleLogoClick = () => {
@@ -118,17 +94,6 @@ const Header: React.FC<HeaderProps> = ({
     onNavigateHome?.();
   };
 
-  // Group microsites by country
-  const groupedMicrosites = React.useMemo(() => {
-    const groups: { [country: string]: UserMicrosite[] } = {};
-    userMicrosites.forEach(microsite => {
-      if (!groups[microsite.country]) {
-        groups[microsite.country] = [];
-      }
-      groups[microsite.country].push(microsite);
-    });
-    return groups;
-  }, [userMicrosites]);
 
   // Click outside handlers
   const userDropdownRef = useClickOutside<HTMLDivElement>(
@@ -136,22 +101,9 @@ const Header: React.FC<HeaderProps> = ({
     userDropdownOpen
   );
 
-  const appLauncherRef = useClickOutside<HTMLDivElement>(
-    () => setAppLauncherOpen(false),
-    appLauncherOpen
-  );
-
   return (
     <header className="header">
       <div className="header-left">
-        <button 
-          className="menu-toggle" 
-          onClick={onToggleSidebar}
-          aria-label={t('toggleSidebar', currentLanguage)}
-        >
-          ☰
-        </button>
-        
         <div 
           className="logo-section"
           onClick={handleLogoClick}
@@ -175,105 +127,6 @@ const Header: React.FC<HeaderProps> = ({
       </div>
       
       <div className="header-right">
-        {/* App Launcher */}
-        <div className="app-launcher" ref={appLauncherRef}>
-          <button 
-            className="app-launcher-button" 
-            onClick={handleAppLauncherClick}
-            title={t('myApplications', currentLanguage)}
-            aria-label={t('myApplications', currentLanguage)}
-            aria-expanded={appLauncherOpen}
-            aria-haspopup="true"
-          >
-            <div className="nine-dot-grid">
-              <div className="dot"></div>
-              <div className="dot"></div>
-              <div className="dot"></div>
-              <div className="dot"></div>
-              <div className="dot"></div>
-              <div className="dot"></div>
-              <div className="dot"></div>
-              <div className="dot"></div>
-              <div className="dot"></div>
-            </div>
-          </button>
-          
-          <div className={`app-launcher-dropdown ${appLauncherOpen ? 'active' : ''}`}>
-            <div className="app-launcher-header">
-              <h3>{t('myApplications', currentLanguage)}</h3>
-              <p className="app-count">
-                {userMicrosites.length} {userMicrosites.length !== 1 ? t('applicationsAvailable', currentLanguage) : t('application', currentLanguage)}
-              </p>
-            </div>
-            
-            {isLoadingMicrosites ? (
-              <div className="loading-state">
-                <div className="loading-spinner" aria-label={t('loading', currentLanguage)}></div>
-                <p>{t('loadingApplications', currentLanguage)}</p>
-              </div>
-            ) : userMicrosites.length > 0 ? (
-              <div className="app-grid-container">
-                {Object.entries(groupedMicrosites).map(([country, apps]) => (
-                  <div key={country} className="country-section">
-                    <div className="country-header">
-                      <span className="country-flag">{apps[0].countryFlag}</span>
-                      <h4 className="country-name">{country}</h4>
-                      <span className="country-count">({apps.length})</span>
-                    </div>
-                    <div className="app-grid">
-                      {apps.map((app) => (
-                        <div 
-                          key={app.id}
-                          className="app-item"
-                          onClick={() => handleMicrositeClick(app)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              handleMicrositeClick(app);
-                            }
-                          }}
-                          title={app.description || app.name}
-                          tabIndex={0}
-                          role="button"
-                        >
-                          <div 
-                            className="app-icon"
-                            style={{ backgroundColor: app.color }}
-                          >
-                            {app.icon}
-                          </div>
-                          <span className="app-name">{app.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-state">
-                <div className="empty-icon">📱</div>
-                <p>{t('noApplicationsAvailable', currentLanguage)}</p>
-                <span className="empty-subtitle">
-                  {t('contactAdministrator', currentLanguage)}
-                </span>
-              </div>
-            )}
-            
-            <div className="app-launcher-footer">
-              <button 
-                className="sync-button"
-                onClick={handleSyncMicrosites}
-                disabled={isLoadingMicrosites}
-                title={t('refreshApplications', currentLanguage)}
-              >
-                <span>🔄</span>
-                {isLoadingMicrosites ? t('syncing', currentLanguage) : t('refresh', currentLanguage)}
-              </button>
-            </div>
-          </div>
-        </div>
-
-
         {/* User Avatar */}
         <div 
           className="user-avatar"

@@ -37,12 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const t = useTranslation(currentLanguage);
   
-  const navItems: NavItem[] = [
-    { id: 'applications', icon: '📱', label: t('applications'), tooltip: t('applications') },
-    { id: 'maps', icon: '🗺️', label: t('maps'), tooltip: t('mapsScenes') },
-    { id: 'layers', icon: '📑', label: t('layers'), tooltip: t('dataLayers') },
-    { id: 'data', icon: '💾', label: t('data'), tooltip: t('dataManagement') }
-  ];
+  const navItems: NavItem[] = [];
 
   const handleNavClick = (panelId: string) => {
     onPanelChange(panelId);
