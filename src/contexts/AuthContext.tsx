@@ -4,6 +4,7 @@ import { authService } from '../services/authService';
 import { SecurityConfig, SessionManager } from '../utils/security';
 import { groupValidationService } from '../services/groupValidationService';
 import { webhookService } from '../services/webhookService';
+import { SECURITY_CONFIG } from '../constants';
 import { authLogger, securityLogger } from '../utils/logger';
 
 interface AuthContextType {

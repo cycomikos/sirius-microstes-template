@@ -1,6 +1,5 @@
 import { authLogger, securityLogger } from '../utils/logger';
 import { SECURITY_CONFIG } from '../constants';
-import { validateSiriusAccess } from '../utils/portalUtils';
 
 export interface GroupChangeEvent {
   userId: string;
