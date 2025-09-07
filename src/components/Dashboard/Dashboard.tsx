@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { CountryCode, Microsite } from '../../types/microsite';
-import { COUNTRIES } from '../../data/microsites';
 import { useMicrosites } from '../../hooks/useMicrosites';
 import { Language } from '../../utils/translations';
 import { useTranslation, createPageRange, scrollToElement, calculateLayoutStyles, createErrorHandler } from '../../utils/componentHelpers';
@@ -28,8 +27,12 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded,
   const {
     selectedCountry,
     filteredMicrosites,
+    countries,
+    loading,
+    error: dataError,
     handleCountryChange,
-    handleMicrositeAccess
+    handleMicrositeAccess,
+    refreshData
   } = useMicrosites();
 
   const handleMicrositeClick = useCallback((microsite: Microsite) => {
@@ -105,7 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded,
             value={selectedCountry}
             onChange={(e) => handleCountryChange(e.target.value as CountryCode)}
           >
-            {COUNTRIES.map(country => (
+            {countries.map(country => (
               <option key={country.value} value={country.value}>
                 {country.label}
               </option>
@@ -113,19 +116,38 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded,
           </select>
         </div>
 
-        <ErrorMessage message={error} type="error" />
+        <ErrorMessage message={error || dataError} type="error" />
 
-        <div className="microsites-grid">
-          {paginationData.paginatedMicrosites.filter(Boolean).map(microsite => (
-            <MicrositeCard
-              key={microsite.id}
-              microsite={microsite}
-              onAccess={handleMicrositeClick}
-              onRequestAccess={handleRequestAccess}
-              currentLanguage={currentLanguage}
-            />
-          ))}
-        </div>
+        {dataError && (
+          <div className="error-actions">
+            <button 
+              onClick={refreshData} 
+              className="retry-button"
+              disabled={loading}
+            >
+              {loading ? t('loading') : t('refresh')}
+            </button>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>{t('loading')}</p>
+          </div>
+        ) : (
+          <div className="microsites-grid">
+            {paginationData.paginatedMicrosites.filter(Boolean).map(microsite => (
+              <MicrositeCard
+                key={microsite.id}
+                microsite={microsite}
+                onAccess={handleMicrositeClick}
+                onRequestAccess={handleRequestAccess}
+                currentLanguage={currentLanguage}
+              />
+            ))}
+          </div>
+        )}
 
         {paginationData.totalPages > 1 && (
           <div className="pagination">
