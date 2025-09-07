@@ -1,6 +1,5 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/Login/Login';
 import Header from './components/Header/Header';
 import Sidebar from './components/Sidebar/Sidebar';
 import Dashboard from './components/Dashboard/Dashboard';
@@ -164,13 +163,54 @@ function App() {
     );
   }
 
-  // Check if we have a valid session before showing login
-  // This prevents showing login page during temporary authentication state loss
-  const shouldShowLogin = !state.isAuthenticated && !state.loading;
-  
-  if (shouldShowLogin) {
-    console.log('🚪 Showing login page - not authenticated and not loading');
-    return <Login onLogin={() => {}} />;
+  // Show loading state during automatic authentication
+  // In the simplified flow, we don't show the login screen - authentication is automatic
+  if (!state.isAuthenticated && state.loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        flexDirection: 'column'
+      }}>
+        <div style={{ marginBottom: '20px', fontSize: '48px' }}>S</div>
+        <div style={{ marginBottom: '10px', fontSize: '24px', fontWeight: 'bold' }}>SIRIUS Portal</div>
+        <div style={{ marginBottom: '20px' }}>Authenticating with ArcGIS Enterprise...</div>
+        <div className="login-loading">
+          <div style={{ 
+            width: '40px', 
+            height: '40px', 
+            border: '4px solid #f3f3f3', 
+            borderTop: '4px solid #0079c1', 
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+        </div>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // If we get here and not authenticated, something went wrong - should not happen in simplified flow
+  if (!state.isAuthenticated) {
+    console.log('🔄 Not authenticated and not loading - this should not happen in simplified flow');
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        flexDirection: 'column'
+      }}>
+        <div>Redirecting to external portal...</div>
+      </div>
+    );
   }
 
   return (
@@ -238,6 +278,10 @@ function App() {
                 panelWidth={panelWidth}
               />
             } />
+            
+            {/* OAuth Callback Route */}
+            <Route path="/auth/callback" element={<Navigate to="/" replace />} />
+            <Route path="/login" element={<Navigate to="/" replace />} />
             
             {/* Error Pages */}
             <Route path="/error/400" element={<Error400 />} />

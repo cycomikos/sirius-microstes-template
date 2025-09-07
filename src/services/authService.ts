@@ -166,14 +166,65 @@ class AuthService {
       
       return user;
     } catch (error) {
-      authLogger.debug('Sign in failed', error);
+      authLogger.error('Sign in failed - detailed error:', {
+        error: error,
+        errorName: (error as any)?.name,
+        errorMessage: (error as any)?.message,
+        errorCode: (error as any)?.code,
+        errorDetails: (error as any)?.details,
+        errorStack: (error as any)?.stack
+      });
       
-      // Re-throw specific access denied errors
-      if (error instanceof Error && error.message.includes('Access denied')) {
-        throw error;
+      // Check for user cancellation/aborted authentication
+      if (error instanceof Error) {
+        const errorMessage = error.message?.toLowerCase() || '';
+        const errorName = error.name?.toLowerCase() || '';
+        const errorCode = (error as any)?.code?.toLowerCase() || '';
+        
+        // Comprehensive cancellation detection
+        const cancellationIndicators = [
+          'user aborted',
+          'cancelled',
+          'canceled',
+          'popup blocked',
+          'user denied',
+          'user cancelled',
+          'authentication cancelled',
+          'login cancelled',
+          'oauth cancelled',
+          'access_denied',
+          'user_cancelled',
+          'authentication_cancelled'
+        ];
+        
+        const isCancellation = cancellationIndicators.some(indicator => 
+          errorMessage.includes(indicator) || 
+          errorName.includes(indicator) || 
+          errorCode.includes(indicator)
+        ) || errorName === 'identitymanagererror' || 
+           errorCode === 'identity-manager:user-aborted';
+        
+        if (isCancellation) {
+          authLogger.info('🚫 User cancelled/aborted authentication - detected cancellation');
+          const cancelError = new Error('User cancelled authentication');
+          (cancelError as any).code = 'USER_CANCELLED';
+          (cancelError as any).name = 'IdentityManagerError';
+          throw cancelError;
+        }
+        
+        // Re-throw specific access denied errors
+        if (error.message.includes('Access denied')) {
+          throw error;
+        }
       }
       
-      throw new Error('Authentication failed');
+      // For any other authentication error, also treat as potential cancellation
+      // This is a fallback since ArcGIS Enterprise can throw various error types
+      authLogger.warn('🔄 Unknown authentication error - treating as cancellation for safety');
+      const cancelError = new Error('Authentication failed - treating as user cancellation');
+      (cancelError as any).code = 'USER_CANCELLED';
+      (cancelError as any).name = 'IdentityManagerError';
+      throw cancelError;
     }
   }
 

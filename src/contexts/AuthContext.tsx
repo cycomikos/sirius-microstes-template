@@ -175,10 +175,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
     }
 
-    // Temporarily disable automatic session check to prevent auth state loss
-    // Only call checkSession if we don't have a restored authentication state
+    // Auto-trigger authentication if not already authenticated
+    // This implements the simplified flow: directly start ArcGIS Enterprise auth
     if (!initialState.isAuthenticated) {
-      checkSession();
+      autoSignIn();
     }
 
     // Cleanup on unmount
@@ -192,32 +192,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []); // Empty dependency array - initialize only once
 
-  const checkSession = async () => {
-    authLogger.info('🔄 Starting session check');
+
+  const autoSignIn = async () => {
+    authLogger.info('🚀 Starting automatic ArcGIS Enterprise authentication');
     dispatch({ type: 'SET_LOADING', payload: true });
+    
     try {
-      const user = await authService.checkSession();
-      if (user) {
-        authLogger.info('✅ Session check successful - user authenticated', { username: user.username });
-        dispatch({ type: 'SET_USER', payload: user });
-        
-        // Initialize webhook service for existing session
-        if (SECURITY_CONFIG.USE_WEBHOOKS) {
-          webhookService.initialize(user.username, () => {
-            authLogger.info('🔗 Webhook detected group access lost');
-            handleGroupAccessLostRef.current?.();
-          });
-        }
-      } else {
-        authLogger.warn('❌ Session check returned null - no valid session');
-        dispatch({ type: 'SET_USER', payload: null });
+      const user = await authService.signIn();
+      dispatch({ type: 'SET_USER', payload: user });
+      
+      // Initialize webhook service for real-time group validation
+      if (SECURITY_CONFIG.USE_WEBHOOKS && user) {
+        webhookService.initialize(user.username, () => {
+          authLogger.info('🔗 Webhook detected group access lost');
+          handleGroupAccessLostRef.current?.();
+        });
       }
     } catch (error: any) {
-      authLogger.error('💥 Session check failed', error);
+      authLogger.error('Auto sign in failed', error);
+      
+      // Handle authentication cancellation - redirect to external portal
+      if (error.name === 'IdentityManagerError' || 
+          error.message?.includes('User aborted') || 
+          error.message?.includes('cancelled') ||
+          error.code === 'USER_CANCELLED') {
+        authLogger.info('🔄 User cancelled authentication - redirecting to external portal');
+        window.location.href = 'https://publicgis.petronas.com/sirius-portal/';
+        return;
+      }
       
       // Handle Sirius Users access denial specifically
       if (error.code === 'SIRIUS_ACCESS_DENIED') {
-        authLogger.error('🚫 Access denied - Sirius group issue', { error: error.message });
         dispatch({ 
           type: 'SET_ACCESS_DENIED', 
           payload: {
@@ -227,20 +232,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         });
       } else {
-        // Only clear authentication state if there was a legitimate authentication failure
-        // Don't clear state for network errors or temporary issues during navigation
-        const isNavigationError = error.message?.includes('navigation') || 
-                                 error.message?.includes('route') ||
-                                 error.name === 'NetworkError';
-        
-        if (!isNavigationError) {
-          authLogger.error('🔓 Clearing authentication state due to session failure');
-          dispatch({ type: 'SET_ERROR', payload: 'Session check failed' });
-        } else {
-          authLogger.info('🛡️ Preserving auth state - navigation error detected');
-          // Keep current state but clear loading
-          dispatch({ type: 'SET_LOADING', payload: false });
-        }
+        // For other errors, redirect to external portal
+        authLogger.error('🔄 Authentication error - redirecting to external portal');
+        window.location.href = 'https://publicgis.petronas.com/sirius-portal/';
       }
     }
   };
