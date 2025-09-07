@@ -64,11 +64,6 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
     }
   }, [onViewChange]);
 
-  const navigateToDashboard = useCallback(() => {
-    if (onViewChange) {
-      onViewChange('dashboard');
-    }
-  }, [onViewChange]);
 
   const handleItemClick = useCallback((item: PanelItem) => {
     if (item.onClick) {
@@ -139,7 +134,7 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
         createPanelItem('4', '📖', 'documentation', 'userGuideApi')
       ]
     }
-  }), [t, createPanelItem, navigateToMaps]);
+  }), [t, createPanelItem, navigateToMaps, navigateToMapsAndScenes]);
 
   const currentPanel: PanelData | undefined = panelData[activePanel];
 

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { logger, LogCategory } from '../../utils/logger';
 import './ErrorPages.css';
 
@@ -12,7 +11,6 @@ const Error503: React.FC<Error503Props> = ({
   estimatedDowntime = "2 hours", 
   maintenanceMessage = "We're performing scheduled maintenance to improve your experience." 
 }) => {
-  const navigate = useNavigate();
   const [timeLeft, setTimeLeft] = useState<string>('');
 
   useEffect(() => {

@@ -313,7 +313,13 @@ export class GroupValidationService {
 
       const portal = await this.createAuthenticatedPortal();
       if (!portal?.user) {
-        groupValidationLogger.warn('No portal user available for validation');
+        // Only log portal user warnings once every 5 minutes to reduce noise
+        const now = Date.now();
+        const lastPortalWarn = (this as any).lastPortalWarn || 0;
+        if (now - lastPortalWarn > 300000) { // 5 minutes
+          groupValidationLogger.warn('No portal user available for validation');
+          (this as any).lastPortalWarn = now;
+        }
         return;
       }
 
@@ -347,9 +353,18 @@ export class GroupValidationService {
 
     // Check if user is still authenticated
     try {
-      await IdentityManager.checkSignInStatus(portalUrl);
+      const credential = await IdentityManager.checkSignInStatus(portalUrl);
+      if (!credential) {
+        return null;
+      }
     } catch (error) {
-      groupValidationLogger.warn('User not authenticated, cannot validate groups');
+      // Only log authentication warnings once every 5 minutes to reduce noise
+      const now = Date.now();
+      const lastAuthWarn = (this as any).lastAuthWarn || 0;
+      if (now - lastAuthWarn > 300000) { // 5 minutes
+        groupValidationLogger.warn('User not authenticated, cannot validate groups');
+        (this as any).lastAuthWarn = now;
+      }
       return null;
     }
 

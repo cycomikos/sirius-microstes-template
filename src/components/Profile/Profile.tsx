@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalciteCard, CalciteInput, CalciteButton, CalciteChip, CalciteIcon, CalciteBlock, CalciteNotice } from '@esri/calcite-components-react';
+import { CalciteIcon } from '@esri/calcite-components-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getTranslation, TranslationKey, Language } from '../../utils/translations';
 import { calculateLayoutStyles } from '../../utils/componentHelpers';
