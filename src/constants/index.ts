@@ -37,7 +37,7 @@ export const VALIDATION_LIMITS = {
 } as const;
 
 export const APP_CONFIG = {
-  VERSION: '1.0.0',
+  VERSION: '0.1.0',
   APP_NAME: 'SIRIUS Portal',
   APP_DESCRIPTION: 'Enterprise GIS Platform'
 } as const;
