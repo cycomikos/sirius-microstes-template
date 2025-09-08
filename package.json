@@ -2,6 +2,7 @@
   "name": "sirius-microsites",
   "version": "0.1.0",
   "private": true,
+  "homepage": "/sirius-microsites",
   "dependencies": {
     "@arcgis/core": "^4.33.0",
     "@esri/calcite-components": "^3.2.0",
