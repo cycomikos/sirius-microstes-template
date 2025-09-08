@@ -27,7 +27,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded,
   const {
     selectedCountry,
     filteredMicrosites,
-    countries,
+    countriesWithCounts,
     loading,
     error: dataError,
     handleCountryChange,
@@ -108,9 +108,9 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded,
             value={selectedCountry}
             onChange={(e) => handleCountryChange(e.target.value as CountryCode)}
           >
-            {countries.map(country => (
+            {countriesWithCounts.map(country => (
               <option key={country.value} value={country.value}>
-                {country.label}
+                {country.label} ({country.count})
               </option>
             ))}
           </select>

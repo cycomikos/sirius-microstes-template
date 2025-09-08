@@ -2,10 +2,15 @@ import { useState, useMemo, useEffect } from 'react';
 import { Microsite, CountryCode, Country } from '../types/microsite';
 import { arcgisService } from '../services/arcgisService';
 
+interface CountryWithCount extends Country {
+  count: number;
+}
+
 export const useMicrosites = (initialCountry: CountryCode = 'MY') => {
   const [selectedCountry, setSelectedCountry] = useState<CountryCode>(initialCountry);
   const [microsites, setMicrosites] = useState<Microsite[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
+  const [countriesWithCounts, setCountriesWithCounts] = useState<CountryWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,9 +19,22 @@ export const useMicrosites = (initialCountry: CountryCode = 'MY') => {
       try {
         setLoading(true);
         setError(null);
-        const data = await arcgisService.fetchMicrositesFromArcGIS();
+        const data = await arcgisService.fetchMicrositesFromPortal();
         setMicrosites(data.microsites);
         setCountries(data.countries);
+        
+        // Calculate country counts
+        const countryCountsMap: Record<string, number> = {};
+        data.microsites.forEach(site => {
+          countryCountsMap[site.country] = (countryCountsMap[site.country] || 0) + 1;
+        });
+        
+        const countriesWithCounts = data.countries.map(country => ({
+          ...country,
+          count: countryCountsMap[country.value] || 0
+        }));
+        
+        setCountriesWithCounts(countriesWithCounts);
       } catch (err) {
         console.error('Failed to fetch microsites:', err);
         setError(err instanceof Error ? err.message : 'Failed to load microsite data');
@@ -66,9 +84,22 @@ export const useMicrosites = (initialCountry: CountryCode = 'MY') => {
     try {
       setLoading(true);
       setError(null);
-      const data = await arcgisService.fetchMicrositesFromArcGIS();
+      const data = await arcgisService.fetchMicrositesFromPortal();
       setMicrosites(data.microsites);
       setCountries(data.countries);
+      
+      // Calculate country counts
+      const countryCountsMap: Record<string, number> = {};
+      data.microsites.forEach(site => {
+        countryCountsMap[site.country] = (countryCountsMap[site.country] || 0) + 1;
+      });
+      
+      const countriesWithCounts = data.countries.map(country => ({
+        ...country,
+        count: countryCountsMap[country.value] || 0
+      }));
+      
+      setCountriesWithCounts(countriesWithCounts);
     } catch (err) {
       console.error('Failed to refresh microsites:', err);
       setError(err instanceof Error ? err.message : 'Failed to refresh microsite data');
@@ -81,6 +112,7 @@ export const useMicrosites = (initialCountry: CountryCode = 'MY') => {
     selectedCountry,
     filteredMicrosites,
     countries,
+    countriesWithCounts,
     loading,
     error,
     handleCountryChange,

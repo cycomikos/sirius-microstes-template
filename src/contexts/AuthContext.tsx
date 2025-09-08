@@ -3,8 +3,6 @@ import { AuthState, User } from '../types/auth';
 import { authService } from '../services/authService';
 import { SecurityConfig, SessionManager } from '../utils/security';
 import { groupValidationService } from '../services/groupValidationService';
-import { webhookService } from '../services/webhookService';
-import { SECURITY_CONFIG } from '../constants';
 import { authLogger, securityLogger } from '../utils/logger';
 
 interface AuthContextType {
@@ -250,20 +248,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       signOut();
     });
 
-    // Initialize group validation service - choose between webhook or polling
-    if (SECURITY_CONFIG.USE_WEBHOOKS) {
-      // Use webhook-based real-time group validation (preferred)
-      authLogger.info('🚀 Initializing webhook-based group validation');
-      // Note: webhookService will be initialized when user successfully logs in
-    } else {
-      // Fallback to polling-based group validation
-      authLogger.info('🔄 Initializing polling-based group validation (fallback)');
-      groupValidationService.initialize(() => {
-        authLogger.info('Group access lost - user removed from Sirius Users group');
-        // Use the ref to always call the latest version of the callback
-        handleGroupAccessLostRef.current?.();
-      });
-    }
+    // Initialize polling-based group validation
+    authLogger.info('🔄 Initializing polling-based group validation');
+    groupValidationService.initialize(() => {
+      authLogger.info('Group access lost - user removed from Sirius Users group');
+      // Use the ref to always call the latest version of the callback
+      handleGroupAccessLostRef.current?.();
+    });
 
     // Auto-trigger authentication if not already authenticated
     // This implements the simplified flow: directly start ArcGIS Enterprise auth
@@ -287,11 +278,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Cleanup on unmount
     return () => {
       SessionManager.cleanup();
-      if (SECURITY_CONFIG.USE_WEBHOOKS) {
-        webhookService.cleanup();
-      } else {
-        groupValidationService.cleanup();
-      }
+      groupValidationService.cleanup();
     };
   }, []); // Empty dependency array - initialize only once
 
@@ -307,14 +294,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       sessionStorage.removeItem('auth_cancelled');
       
       dispatch({ type: 'SET_USER', payload: user });
-      
-      // Initialize webhook service for real-time group validation
-      if (SECURITY_CONFIG.USE_WEBHOOKS && user) {
-        webhookService.initialize(user.username, () => {
-          authLogger.info('🔗 Webhook detected group access lost');
-          handleGroupAccessLostRef.current?.();
-        });
-      }
     } catch (error: any) {
       authLogger.error('Auto sign in failed - full error details:', {
         error: error,
@@ -370,14 +349,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       sessionStorage.removeItem('auth_cancelled');
       
       dispatch({ type: 'SET_USER', payload: user });
-      
-      // Initialize webhook service for real-time group validation
-      if (SECURITY_CONFIG.USE_WEBHOOKS && user) {
-        webhookService.initialize(user.username, () => {
-          authLogger.info('🔗 Webhook detected group access lost');
-          handleGroupAccessLostRef.current?.();
-        });
-      }
     } catch (error: any) {
       authLogger.error('Sign in failed', error);
       

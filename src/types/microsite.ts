@@ -10,6 +10,7 @@ export interface Microsite {
   icon: string;
   gradient: string;
   country: string;
+  groupId?: string;
 }
 
 export interface Country {
