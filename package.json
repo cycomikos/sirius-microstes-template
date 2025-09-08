@@ -1,6 +1,6 @@
 {
-  "name": "sirius-microsite-react",
-  "version": "1.0.0",
+  "name": "sirius-microsites",
+  "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@arcgis/core": "^4.33.0",
