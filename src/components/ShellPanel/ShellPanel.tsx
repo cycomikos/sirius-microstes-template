@@ -46,14 +46,6 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
 }) => {
   const t = useTranslation(currentLanguage);
   const navigate = useNavigate();
-  const panelRef = React.useRef<HTMLDivElement>(null);
-
-  // Set CSS custom property when panelWidth changes
-  React.useEffect(() => {
-    if (panelRef.current) {
-      panelRef.current.style.setProperty('--panel-width', `${panelWidth}px`);
-    }
-  }, [panelWidth]);
   const createPanelItem = useCallback((id: string, icon: string, titleKey: TranslationKey, descriptionKey: TranslationKey, onClick?: () => void) => ({
     id,
     title: `${icon} ${t(titleKey)}`,
@@ -150,8 +142,8 @@ const ShellPanel: React.FC<ShellPanelProps> = ({
 
   return (
     <div 
-      ref={panelRef}
       className={`shell-panel-wrapper ${isVisible ? 'visible' : ''} ${isResizing ? 'resizing' : ''}`}
+      data-panel-width={panelWidth}
     >
       <div className="shell-panel">
         <div className="shell-panel-header">
