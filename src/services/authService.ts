@@ -84,7 +84,17 @@ class AuthService {
 
   async signIn(): Promise<User> {
     try {
-      const credential = await IdentityManager.getCredential(this.oAuthInfo.portalUrl + '/sharing/rest');
+      authLogger.info('🔐 Starting credential acquisition from ArcGIS Enterprise');
+      
+      // Add timeout promise to prevent hanging
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Authentication request timed out after 25 seconds'));
+        }, 25000);
+      });
+      
+      const credentialPromise = IdentityManager.getCredential(this.oAuthInfo.portalUrl + '/sharing/rest');
+      const credential = await Promise.race([credentialPromise, timeoutPromise]);
       
       const portal = new Portal({ 
         url: this.oAuthInfo.portalUrl

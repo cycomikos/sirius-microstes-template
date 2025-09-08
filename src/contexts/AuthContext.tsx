@@ -287,14 +287,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     authLogger.info('🚀 Starting automatic ArcGIS Enterprise authentication');
     dispatch({ type: 'SET_LOADING', payload: true });
     
+    // Add timeout to prevent infinite loading
+    const authTimeout = setTimeout(() => {
+      authLogger.warn('⚠️ Authentication timeout - clearing loading state');
+      dispatch({ 
+        type: 'SET_ERROR', 
+        payload: 'Authentication timeout. Please try again.' 
+      });
+    }, 30000); // 30 second timeout
+    
     try {
       const user = await authService.signIn();
+      
+      clearTimeout(authTimeout);
       
       // Clear cancellation flag on successful login
       sessionStorage.removeItem('auth_cancelled');
       
       dispatch({ type: 'SET_USER', payload: user });
     } catch (error: any) {
+      clearTimeout(authTimeout);
+      
       authLogger.error('Auto sign in failed - full error details:', {
         error: error,
         errorName: error?.name,
@@ -342,14 +355,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signIn = async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
+    
+    // Add timeout to prevent infinite loading
+    const authTimeout = setTimeout(() => {
+      authLogger.warn('⚠️ Manual sign-in timeout - clearing loading state');
+      dispatch({ 
+        type: 'SET_ERROR', 
+        payload: 'Authentication timeout. Please try again.' 
+      });
+    }, 30000); // 30 second timeout
+    
     try {
       const user = await authService.signIn();
+      
+      clearTimeout(authTimeout);
       
       // Clear cancellation flag on successful login
       sessionStorage.removeItem('auth_cancelled');
       
       dispatch({ type: 'SET_USER', payload: user });
     } catch (error: any) {
+      clearTimeout(authTimeout);
+      
       authLogger.error('Sign in failed', error);
       
       // Handle Sirius Users access denial specifically
