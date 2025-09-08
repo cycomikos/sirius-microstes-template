@@ -1,4 +1,5 @@
 import { Microsite, Country } from '../types/microsite';
+import { getMicrositeImage } from '../utils/imageMapper';
 
 interface ArcGISFeatureService {
   objectIdFieldName?: string;
@@ -297,7 +298,7 @@ class ArcGISService {
 
     const microsites: Microsite[] = arcgisData.features.map((feature, index) => {
       const attrs = feature.attributes;
-      return {
+      const microsite = {
         id: attrs.id || (index + 1).toString(),
         title: attrs.title || attrs.name || 'Untitled Microsite',
         description: {
@@ -311,6 +312,10 @@ class ArcGISService {
         country: attrs.country || 'GLOBAL',
         groupId: attrs.groupId || attrs.group_id || null
       };
+      
+      // Use local image instead of emoji
+      microsite.icon = getMicrositeImage(microsite);
+      return microsite;
     });
 
     const countries = this.getUniqueCountries(microsites);
@@ -448,7 +453,7 @@ class ArcGISService {
 
     const microsites: Microsite[] = layer.featureSet.features.map((feature: any) => {
       const attrs = feature.attributes;
-      return {
+      const microsite = {
         id: attrs.id || attrs.objectid?.toString() || Math.random().toString(),
         title: attrs.title || 'Untitled Microsite',
         description: {
@@ -462,6 +467,10 @@ class ArcGISService {
         country: attrs.country || 'GLOBAL',
         groupId: attrs.groupid || null
       };
+      
+      // Use local image instead of emoji
+      microsite.icon = getMicrositeImage(microsite);
+      return microsite;
     });
 
     const countries = this.getUniqueCountries(microsites);

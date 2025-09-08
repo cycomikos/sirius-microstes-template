@@ -119,9 +119,11 @@ export const useMicrosites = (initialCountry: CountryCode = 'MY') => {
         ...country,
         count: countryCountsMap[country.value] || 0
       })).sort((a, b) => {
-        // Global first, then alphabetical by label
+        // Global first, then Malaysia, then alphabetical by label
         if (a.value === 'GLOBAL') return -1;
         if (b.value === 'GLOBAL') return 1;
+        if (a.value === 'MY') return -1;
+        if (b.value === 'MY') return 1;
         return a.label.localeCompare(b.label);
       });
       

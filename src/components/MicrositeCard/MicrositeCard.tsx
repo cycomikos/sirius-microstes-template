@@ -60,7 +60,13 @@ const MicrositeCard: React.FC<MicrositeCardProps> = ({
         className="card-image" 
         style={{ background: microsite.gradient }}
       >
-        <div className="card-logo">{microsite.icon}</div>
+        <div className="card-logo">
+          <img 
+            src={microsite.icon} 
+            alt={microsite.title} 
+            className="microsite-icon"
+          />
+        </div>
         <span className={`card-status ${microsite.status === 'online' ? 'status-online' : 'status-offline'}`}>
           {microsite.status === 'online' ? t('online') : t('offline')}
         </span>
