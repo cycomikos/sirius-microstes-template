@@ -47,7 +47,7 @@ export const useMicrosites = (initialCountry: CountryCode = 'MY') => {
   }, []);
 
   const filteredMicrosites = useMemo(() => {
-    return microsites.filter(site => {
+    const filtered = microsites.filter(site => {
       if (selectedCountry === 'GLOBAL') {
         return site.country === 'GLOBAL';
       }
@@ -55,6 +55,20 @@ export const useMicrosites = (initialCountry: CountryCode = 'MY') => {
         return ['MY', 'GLOBAL'].includes(site.country);
       }
       return site.country === selectedCountry;
+    });
+
+    // Sort by: 1. Get Started button availability (hasAccess && online), 2. microsite name
+    return filtered.sort((a, b) => {
+      const aCanGetStarted = a.hasAccess && a.status === 'online';
+      const bCanGetStarted = b.hasAccess && b.status === 'online';
+      
+      // First sort by Get Started availability (true comes before false)
+      if (aCanGetStarted !== bCanGetStarted) {
+        return bCanGetStarted ? 1 : -1;
+      }
+      
+      // Then sort alphabetically by title
+      return a.title.localeCompare(b.title);
     });
   }, [microsites, selectedCountry]);
 

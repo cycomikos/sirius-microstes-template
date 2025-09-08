@@ -176,7 +176,7 @@ const Profile: React.FC<ProfileProps> = ({
                 <h3 className="user-name">{state.user?.fullName || t('userName', currentLanguage)}</h3>
                 <p className="user-email">{state.user?.username || t('userEmail', currentLanguage)}</p>
                 <div className="profile-groups">
-                  {state.user?.groups.map((group, index) => (
+                  {[...new Set(state.user?.groups || [])].map((group, index) => (
                     <span key={index} className="group-chip">
                       {group}
                     </span>

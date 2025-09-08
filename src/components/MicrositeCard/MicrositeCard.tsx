@@ -1,5 +1,6 @@
 import React from 'react';
 import { Microsite } from '../../types/microsite';
+import { User } from '../../types/auth';
 import { Language } from '../../utils/translations';
 import { useTranslation } from '../../utils/componentHelpers';
 
@@ -8,13 +9,15 @@ interface MicrositeCardProps {
   onAccess: (microsite: Microsite) => void;
   onRequestAccess: (microsite: Microsite) => void;
   currentLanguage: Language;
+  user: User | null;
 }
 
 const MicrositeCard: React.FC<MicrositeCardProps> = ({
   microsite,
   onAccess,
   onRequestAccess,
-  currentLanguage
+  currentLanguage,
+  user
 }) => {
   const t = useTranslation(currentLanguage);
   const renderActionButton = () => {
@@ -26,7 +29,11 @@ const MicrositeCard: React.FC<MicrositeCardProps> = ({
       );
     }
     
-    if (microsite.hasAccess) {
+    // Check if user has access AND has the required groupId (if specified)
+    const userHasGroupAccess = !microsite.groupId || 
+      (user?.groupIds && user.groupIds.includes(microsite.groupId));
+    
+    if (microsite.hasAccess && userHasGroupAccess) {
       return (
         <button 
           className="btn btn-primary"

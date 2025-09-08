@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { CountryCode, Microsite } from '../../types/microsite';
 import { useMicrosites } from '../../hooks/useMicrosites';
+import { useAuth } from '../../contexts/AuthContext';
 import { Language } from '../../utils/translations';
 import { useTranslation, createPageRange, scrollToElement, calculateLayoutStyles, createErrorHandler } from '../../utils/componentHelpers';
 import { authLogger } from '../../utils/logger';
@@ -23,6 +24,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded,
   const [error, setError] = useState<string | null>(null);
   
   const t = useTranslation(currentLanguage);
+  const { state: authState } = useAuth();
   
   const {
     selectedCountry,
@@ -144,6 +146,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentLanguage, sidebarExpanded,
                 onAccess={handleMicrositeClick}
                 onRequestAccess={handleRequestAccess}
                 currentLanguage={currentLanguage}
+                user={authState.user}
               />
             ))}
           </div>
