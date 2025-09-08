@@ -48,3 +48,6 @@ coverage/
 
 # TypeScript cache
 *.tsbuildinfo
+
+# SSL certificates
+ssl/

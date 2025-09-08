@@ -24,7 +24,11 @@ module.exports = {
     
     // Use the new 'server' option instead of deprecated 'https'
     devServerConfig.server = {
-      type: 'https', // Change to 'https' if you need SSL
+      type: 'https',
+      options: {
+        key: path.join(__dirname, 'ssl', 'template.local.key'),
+        cert: path.join(__dirname, 'ssl', 'template.local.crt'),
+      }
     };
     
 
