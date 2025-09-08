@@ -1,6 +1,7 @@
 import React from 'react';
 import { MicrositeProps } from '../../types/microsite';
 import MicrositeLayout from '../../components/MicrositeLayout/MicrositeLayout';
+import './RefineryMicrosite.css';
 
 const RefineryMicrosite: React.FC<MicrositeProps> = ({
   config,
