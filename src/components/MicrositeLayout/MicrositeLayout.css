@@ -1,0 +1,210 @@
+/* Microsite Layout Styles */
+.microsite-layout {
+  min-height: calc(100vh - 60px); /* Account for header */
+  display: flex;
+  flex-direction: column;
+  background: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Microsite Header */
+.microsite-header {
+  background: var(--microsite-primary, var(--primary-color));
+  color: white;
+  padding: 1.5rem 2rem;
+  border-bottom: 3px solid var(--microsite-accent, var(--accent-color));
+}
+
+.microsite-header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.microsite-header-icon {
+  font-size: 2.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.microsite-header-text {
+  flex: 1;
+}
+
+.microsite-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.microsite-description {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.microsite-header-status {
+  display: flex;
+  align-items: center;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-active {
+  background: rgba(39, 174, 96, 0.2);
+  color: #27ae60;
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.status-coming-soon {
+  background: rgba(243, 156, 18, 0.2);
+  color: #f39c12;
+  border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.status-maintenance {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+/* Microsite Content */
+.microsite-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Layout Variants */
+
+/* Map-focused layout */
+.microsite-layout--map-focused .microsite-content {
+  padding: 0;
+  max-width: none;
+}
+
+.microsite-layout--map-focused .microsite-header {
+  position: relative;
+  z-index: 100;
+}
+
+/* Dashboard-focused layout */
+.microsite-layout--dashboard-focused .microsite-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Analytics-focused layout */
+.microsite-layout--analytics-focused .microsite-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Custom layout */
+.microsite-layout--custom .microsite-content {
+  /* Custom layouts defined by individual microsites */
+}
+
+/* Microsite Footer */
+.microsite-footer {
+  background: var(--surface-color);
+  border-top: 1px solid var(--border-color);
+  padding: 1rem 2rem;
+  text-align: center;
+}
+
+.microsite-metadata {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* Theme Support */
+.theme-dark .microsite-header {
+  background: var(--microsite-primary, var(--primary-color));
+}
+
+.theme-dark .status-badge {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .microsite-layout {
+    margin-left: 0 !important;
+  }
+  
+  .microsite-header {
+    padding: 1rem;
+  }
+  
+  .microsite-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .microsite-header-icon {
+    font-size: 2rem;
+  }
+  
+  .microsite-title {
+    font-size: 1.5rem;
+  }
+  
+  .microsite-content {
+    padding: 1rem;
+  }
+  
+  .microsite-layout--dashboard-focused .microsite-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .microsite-header-content {
+    text-align: center;
+  }
+  
+  .microsite-metadata {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+/* Animation */
+.microsite-layout {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

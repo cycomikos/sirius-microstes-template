@@ -1,0 +1,142 @@
+/* EP Microsite Styles */
+.ep-microsite {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navigation */
+.ep-navigation {
+  background: var(--surface-color);
+  border-bottom: 2px solid var(--border-color);
+  padding: 0 2rem;
+  margin-bottom: 2rem;
+}
+
+.ep-nav-tabs {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ep-nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.ep-nav-tab:hover {
+  color: var(--text-color);
+  background: var(--hover-color);
+}
+
+.ep-nav-tab.active {
+  color: var(--microsite-primary, var(--primary-color));
+  border-bottom-color: var(--microsite-primary, var(--primary-color));
+  background: rgba(var(--microsite-primary-rgb, 0, 121, 193), 0.05);
+}
+
+.ep-nav-icon {
+  font-size: 1.1rem;
+}
+
+.ep-nav-label {
+  font-weight: inherit;
+}
+
+/* Content */
+.ep-content {
+  flex: 1;
+  padding: 0 2rem 2rem;
+}
+
+/* Loading State */
+.ep-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--microsite-primary, var(--primary-color));
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Dark Theme */
+.theme-dark .ep-nav-tab {
+  color: var(--text-secondary);
+}
+
+.theme-dark .ep-nav-tab:hover {
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.theme-dark .ep-nav-tab.active {
+  background: rgba(var(--microsite-primary-rgb, 0, 121, 193), 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ep-navigation {
+    padding: 0 1rem;
+  }
+  
+  .ep-nav-tabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .ep-nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .ep-nav-tab {
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+    min-width: fit-content;
+  }
+  
+  .ep-content {
+    padding: 0 1rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ep-nav-tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .ep-nav-icon {
+    font-size: 1rem;
+  }
+}
