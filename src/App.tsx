@@ -75,14 +75,8 @@ const OAuthCallbackHandler: React.FC = () => {
 
   // Show loading while processing
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh',
-      flexDirection: 'column'
-    }}>
-      <div style={{ marginBottom: '20px' }}>Processing authentication...</div>
+    <div className="auth-loading-container">
+      <div className="auth-processing-text">Processing authentication...</div>
     </div>
   );
 };
@@ -256,35 +250,16 @@ function App() {
   // In the simplified flow, we don't show the login screen - authentication is automatic
   if (!state.isAuthenticated && state.loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        flexDirection: 'column'
-      }}>
-        <div style={{ marginBottom: '20px', fontSize: '48px' }}>S</div>
-        <div style={{ marginBottom: '10px', fontSize: '24px', fontWeight: 'bold' }}>SIRIUS Portal</div>
-        <div style={{ marginBottom: '10px' }}>Authenticating with ArcGIS Enterprise...</div>
-        <div style={{ marginBottom: '20px', fontSize: '14px', color: '#666' }}>
+      <div className="auth-loading-container">
+        <div className="auth-logo">S</div>
+        <div className="auth-title">SIRIUS Portal</div>
+        <div className="auth-subtitle">Authenticating with ArcGIS Enterprise...</div>
+        <div className="auth-info-text">
           If you cancel or close the login page, you'll be redirected to the public portal
         </div>
         <div className="login-loading">
-          <div style={{ 
-            width: '40px', 
-            height: '40px', 
-            border: '4px solid #f3f3f3', 
-            borderTop: '4px solid #0079c1', 
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
+          <div className="auth-spinner"></div>
         </div>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
     );
   }
@@ -302,32 +277,21 @@ function App() {
       // User cancelled - show message and redirect to public portal after 2 seconds
       
       return (
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100vh',
-          flexDirection: 'column',
-          gap: '20px'
-        }}>
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>S</div>
-          <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>SIRIUS Portal</div>
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <div style={{ color: '#f39c12', marginBottom: '20px' }}>
+        <div className="cancelled-auth-container">
+          <div className="cancelled-auth-logo">S</div>
+          <div className="cancelled-auth-title">SIRIUS Portal</div>
+          <div className="cancelled-auth-content">
+            <div className="cancelled-auth-warning">
               Authentication was cancelled
             </div>
-            <div style={{ marginBottom: '10px' }}>
+            <div className="cancelled-auth-redirect">
               Redirecting you to the public portal in 30 seconds...
             </div>
           </div>
-          <div style={{ 
-            fontSize: '14px', 
-            color: '#666',
-            textAlign: 'center'
-          }}>
+          <div className="cancelled-auth-footer">
             <a 
               href="https://publicgis.petronas.com/sirius-portal"
-              style={{ color: '#0079c1', textDecoration: 'none', fontSize: '16px' }}
+              className="login-link-large"
             >
               Continue to Public Portal Now →
             </a>
@@ -337,50 +301,29 @@ function App() {
     }
     
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        flexDirection: 'column',
-        gap: '20px'
-      }}>
-        <div style={{ fontSize: '48px', marginBottom: '10px' }}>S</div>
-        <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>SIRIUS Portal</div>
-        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+      <div className="login-container">
+        <div className="login-logo">S</div>
+        <div className="login-title">SIRIUS Portal</div>
+        <div className="login-content">
           {state.error ? (
-            <div style={{ color: '#e74c3c', marginBottom: '20px' }}>
+            <div className="login-error">
               Authentication failed: {state.error}
             </div>
           ) : null}
-          <div style={{ marginBottom: '10px' }}>
+          <div className="login-instruction">
             Please sign in with your ArcGIS Enterprise account
           </div>
         </div>
         <button 
           onClick={() => signIn()}
-          style={{
-            padding: '12px 24px',
-            backgroundColor: '#0079c1',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}
+          className="login-button"
         >
           Sign In with ArcGIS Enterprise
         </button>
-        <div style={{ 
-          marginTop: '20px', 
-          fontSize: '14px', 
-          color: '#666',
-          textAlign: 'center'
-        }}>
+        <div className="login-footer">
           <a 
             href="https://publicgis.petronas.com/sirius-portal"
-            style={{ color: '#0079c1', textDecoration: 'none' }}
+            className="login-link"
           >
             Or visit the public portal →
           </a>

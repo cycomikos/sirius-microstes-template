@@ -238,6 +238,12 @@
   margin-bottom: 0.5rem;
 }
 
+/* Error 403 list styles */
+.error-reason-list {
+  text-align: left;
+  margin: 1rem 0;
+}
+
 @media (max-width: 768px) {
   .error-page {
     padding: 1rem;

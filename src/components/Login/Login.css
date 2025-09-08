@@ -74,3 +74,11 @@
   color: var(--petronas-text-secondary);
   font-size: 0.875rem;
 }
+
+.login-dev-button {
+  margin-top: 0.5rem;
+}
+
+.login-error-notice {
+  margin-top: 1rem;
+}

@@ -43,12 +43,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Show loading spinner while checking authentication or validating access
   if (state.loading || isValidatingAccess) {
     return (
-      <div className="loading-container" style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
-      }}>
+      <div className="loading-container">
         <CalciteLoader label="Checking authentication" scale="l" text="Checking authentication..." />
       </div>
     );
@@ -64,13 +59,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     // Use server-side validation result instead of client-side only
     if (!hasServerSideAccess) {
       return (
-        <div className="access-denied" style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100vh',
-          padding: '2rem'
-        }}>
+        <div className="access-denied">
           <CalciteNotice 
             kind="danger" 
             icon="exclamation-mark-triangle"

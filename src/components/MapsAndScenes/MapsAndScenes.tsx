@@ -79,7 +79,14 @@ const MapsAndScenes: React.FC<MapsAndScenesProps> = ({ currentLanguage = 'en', s
   ];
 
   return (
-    <main className="content-area" style={layoutStyles}>
+    <main 
+      className="content-area"
+      style={{
+        '--layout-margin-left': layoutStyles.marginLeft,
+        '--layout-width': layoutStyles.width,
+        '--layout-transition': layoutStyles.transition
+      } as React.CSSProperties}
+    >
       <div className="content-wrapper">
         <Breadcrumb 
           items={breadcrumbItems} 

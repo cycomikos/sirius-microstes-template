@@ -66,7 +66,7 @@ const Error403: React.FC<Error403Props> = ({ requiredRole, resource, siriusGroup
                 and no longer have permission to access this application.
                 <br/><br/>
                 This can happen when:
-                <ul style={{ textAlign: 'left', margin: '1rem 0' }}>
+                <ul className="error-reason-list">
                   <li>An administrator has removed you from the group</li>
                   <li>Your role or department has changed</li>
                   <li>Your access permissions have been updated</li>

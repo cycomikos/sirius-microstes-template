@@ -3,6 +3,7 @@ import { Microsite } from '../../types/microsite';
 import { User } from '../../types/auth';
 import { Language } from '../../utils/translations';
 import { useTranslation } from '../../utils/componentHelpers';
+import './MicrositeCard.css';
 
 interface MicrositeCardProps {
   microsite: Microsite;
@@ -58,7 +59,7 @@ const MicrositeCard: React.FC<MicrositeCardProps> = ({
     <div className="microsite-card">
       <div 
         className="card-image" 
-        style={{ background: microsite.gradient }}
+        style={{ '--microsite-gradient': microsite.gradient } as React.CSSProperties}
       >
         <div className="card-logo">
           <img 

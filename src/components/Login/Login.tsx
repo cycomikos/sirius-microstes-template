@@ -99,7 +99,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 kind="neutral"
                 onClick={handleBypass}
                 disabled={state.loading}
-                style={{ marginTop: '0.5rem' }}
+                className="login-dev-button"
               >
                 {t('bypassAuthDev')}
               </CalciteButton>
@@ -112,7 +112,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             kind="danger" 
             icon="exclamation-mark-triangle"
             open={true}
-            style={{ marginTop: '1rem' }}
+            className="login-error-notice"
           >
             <div slot="title">{t('error')}</div>
             <div slot="message">
