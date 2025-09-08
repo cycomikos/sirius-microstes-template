@@ -3,6 +3,7 @@ import { Microsite } from '../../types/microsite';
 import { User } from '../../types/auth';
 import { Language } from '../../utils/translations';
 import { useTranslation } from '../../utils/componentHelpers';
+import { getMicrositeImage } from '../../utils/imageMapper';
 import './MicrositeCard.css';
 
 interface MicrositeCardProps {
@@ -63,7 +64,7 @@ const MicrositeCard: React.FC<MicrositeCardProps> = ({
       >
         <div className="card-logo">
           <img 
-            src={microsite.icon} 
+            src={getMicrositeImage(microsite)} 
             alt={microsite.title} 
             className="microsite-icon"
           />
