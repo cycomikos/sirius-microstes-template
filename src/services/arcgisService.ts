@@ -33,12 +33,8 @@ interface MicrositeData {
 }
 
 class ArcGISService {
-  private readonly baseUrl = process.env.NODE_ENV === 'development' 
-    ? '/gisserver/rest/services' 
-    : 'https://publicgis.petronas.com/gisserver/rest/services';
-  private readonly portalUrl = process.env.NODE_ENV === 'development' 
-    ? '/arcgis' 
-    : 'https://publicgis.petronas.com/arcgis';
+  private readonly baseUrl = 'https://publicgis.petronas.com/gisserver/rest/services';
+  private readonly portalUrl = 'https://publicgis.petronas.com/arcgis';
   private readonly primaryItemId = '2a2bb33b814a4abeb26929a5efb8c664';
   private readonly fallbackItemId = '4bcf0c909a7b4f27abb3b9dea0383b76';
   private readonly siriusUsersGroupId = 'afa4ae2949554ec59972abebbfd0034c';
@@ -274,26 +270,20 @@ class ArcGISService {
       } else if (itemData.type === 'Feature Service') {
         // For hosted feature services, construct the URL using item name or id
         const serviceName = itemData.name || itemData.title || itemId;
-        const constructedUrl = process.env.NODE_ENV === 'development'
-          ? `/gisserver/rest/services/Hosted/${serviceName}/FeatureServer/0`
-          : `https://publicgis.petronas.com/gisserver/rest/services/Hosted/${serviceName}/FeatureServer/0`;
+        const constructedUrl = `https://publicgis.petronas.com/gisserver/rest/services/Hosted/${serviceName}/FeatureServer/0`;
         console.log(`Using constructed service URL for ${itemId}:`, constructedUrl);
         return constructedUrl;
       } else {
         console.log(`Item type: ${itemData.type}, trying generic construction`);
         console.log(`Available properties: name=${itemData.name}, title=${itemData.title}`);
-        const constructedUrl = process.env.NODE_ENV === 'development'
-          ? `/gisserver/rest/services/Hosted/${itemData.name || itemData.title || itemId}/FeatureServer/0`
-          : `https://publicgis.petronas.com/gisserver/rest/services/Hosted/${itemData.name || itemData.title || itemId}/FeatureServer/0`;
+        const constructedUrl = `https://publicgis.petronas.com/gisserver/rest/services/Hosted/${itemData.name || itemData.title || itemId}/FeatureServer/0`;
         console.log(`Using generic constructed service URL for ${itemId}:`, constructedUrl);
         return constructedUrl;
       }
     } catch (error) {
       console.warn(`Failed to get service URL for item ${itemId}, using fallback construction:`, error);
       // Fallback to generic constructed URL
-      const fallbackUrl = process.env.NODE_ENV === 'development'
-        ? `/gisserver/rest/services/Hosted/${itemId}/FeatureServer/0`
-        : `https://publicgis.petronas.com/gisserver/rest/services/Hosted/${itemId}/FeatureServer/0`;
+      const fallbackUrl = `https://publicgis.petronas.com/gisserver/rest/services/Hosted/${itemId}/FeatureServer/0`;
       console.log(`Using fallback service URL:`, fallbackUrl);
       return fallbackUrl;
     }
@@ -633,6 +623,7 @@ class ArcGISService {
         ]);
         console.log('✅ API call successful');
         console.log('Total microsites:', metadata.totalMicrosites);
+        console.log('Microsites loaded:', microsites.length);
         console.log('Countries found:', countries);
         console.log('Statistics:', metadata.statistics);
         

@@ -27,37 +27,6 @@ module.exports = {
       type: 'https', // Change to 'https' if you need SSL
     };
     
-    // Proxy configuration to handle CORS and authentication
-    devServerConfig.proxy = {
-      '/arcgis': {
-        target: 'https://publicgis.petronas.com',
-        changeOrigin: true,
-        secure: false, // Disable SSL verification for development
-        pathRewrite: {
-          '^/arcgis': '/arcgis'
-        },
-        onProxyReq: function(proxyReq, req, res) {
-          console.log('Proxying ArcGIS request to:', proxyReq.path);
-        },
-        onError: function(err, req, res) {
-          console.error('ArcGIS Proxy error:', err);
-        }
-      },
-      '/gisserver': {
-        target: 'https://publicgis.petronas.com',
-        changeOrigin: true,
-        secure: false, // Disable SSL verification for development
-        pathRewrite: {
-          '^/gisserver': '/gisserver'
-        },
-        onProxyReq: function(proxyReq, req, res) {
-          console.log('Proxying GIS Server request to:', proxyReq.path);
-        },
-        onError: function(err, req, res) {
-          console.error('GIS Server Proxy error:', err);
-        }
-      }
-    };
 
     // Other dev server options
     devServerConfig.port = process.env.PORT || 3000;
